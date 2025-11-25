@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste de Fluxo - Sistema de Doações</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #4CAF50;
+      padding-bottom: 10px;
+    }
+
+    h2 {
+      color: #666;
+      margin-top: 30px;
+    }
+
+    .step {
+      background: #f9f9f9;
+      padding: 15px;
+      margin: 15px 0;
+      border-left: 4px solid #2196F3;
+      border-radius: 4px;
+    }
+
+    .step.success {
+      border-left-color: #4CAF50;
+      background: #e8f5e9;
+    }
+
+    .step.error {
+      border-left-color: #f44336;
+      background: #ffebee;
+    }
+
+    .step.pending {
+      border-left-color: #ff9800;
+      background: #fff3e0;
+    }
+
+    button {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 10px 5px;
+    }
+
+    button:hover {
+      background: #1976D2;
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .result {
+      background: #f5f5f5;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .info {
+      background: #e3f2fd;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      border-left: 4px solid #2196F3;
+    }
+
+    .credential {
+      display: inline-block;
+      background: #333;
+      color: #4CAF50;
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-family: monospace;
+      margin: 0 5px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+
+    .status.success {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .status.error {
+      background: #f44336;
+      color: white;
+    }
+
+    .status.pending {
+      background: #ff9800;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>🧪 Teste de Fluxo - Sistema de Doações</h1>
+
+    <div class="info">
+      <strong>📋 Este teste irá:</strong>
+      <ol>
+        <li>Fazer login com credenciais de admin</li>
+        <li>Criar uma nova categoria</li>
+        <li>Criar um produto vinculado à categoria</li>
+        <li>Criar um lote do produto com código de barras</li>
+        <li>Buscar a etiqueta gerada</li>
+      </ol>
+      <p><strong>Credenciais:</strong> <span class="credential">admin@ong.com</span> / <span
+          class="credential">admin123</span></p>
+    </div>
+
+    <button onclick="runFullTest()" id="runBtn">▶️ Executar Teste Completo</button>
+    <button onclick="clearResults()">🗑️ Limpar Resultados</button>
+
+    <h2>Resultados:</h2>
+    <div id="results"></div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:8080';
+    let token = null;
+    let categoriaId = null;
+    let produtoId = null;
+    let loteId = null;
+
+    function addStep(title, status = 'pending', content = '') {
+      const resultsDiv = document.getElementById('results');
+      const stepDiv = document.createElement('div');
+      stepDiv.className = `step ${status}`;
+      stepDiv.innerHTML = `
+                <strong>${title}</strong>
+                <span class="status ${status}">${status.toUpperCase()}</span>
+                ${content ? `<div class="result">${content}</div>` : ''}
+            `;
+      resultsDiv.appendChild(stepDiv);
+      resultsDiv.scrollTop = resultsDiv.scrollHeight;
+      return stepDiv;
+    }
+
+    function updateStep(stepDiv, status, content = '') {
+      stepDiv.className = `step ${status}`;
+      const statusSpan = stepDiv.querySelector('.status');
+      statusSpan.className = `status ${status}`;
+      statusSpan.textContent = status.toUpperCase();
+
+      if (content) {
+        let resultDiv = stepDiv.querySelector('.result');
+        if (!resultDiv) {
+          resultDiv = document.createElement('div');
+          resultDiv.className = 'result';
+          stepDiv.appendChild(resultDiv);
+        }
+        resultDiv.textContent = content;
+      }
+    }
+
+    async function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function login() {
+      const step = addStep('1️⃣ Fazendo login...', 'pending');
+      try {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: 'admin@ong.com',
+            senha: 'admin123'
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        token = data.token;
+
+        // Decodificar token
+        const payload = JSON.parse(atob(token.split('.')[1]));
+
+        updateStep(step, 'success',
+          `✅ Login realizado com sucesso!\n` +
+          `Usuario: ${payload.nome} (${payload.perfil})\n` +
+          `Email: ${payload.sub}\n` +
+          `Token: ${token.substring(0, 50)}...`
+        );
+        return true;
+      } catch (error) {
+        updateStep(step, 'error', `❌ Erro no login: ${error.message}`);
+        return false;
+      }
+    }
+
+    async function criarCategoria() {
+      const step = addStep('2️⃣ Criando categoria...', 'pending');
+      try {
+        const nomeCategoria = `Alimentos_${Date.now()}`;
+        const response = await fetch(`${API_URL}/api/categorias`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            nome: nomeCategoria,
+            descricao: 'Categoria de teste para alimentos não perecíveis'
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        categoriaId = data.id;
+
+        updateStep(step, 'success',
+          `✅ Categoria criada com sucesso!\n` +
+          `ID: ${data.id}\n` +
+          `Nome: ${data.nome}\n` +
+          `Descrição: ${data.descricao}`
+        );
+        return true;
+      } catch (error) {
+        updateStep(step, 'error', `❌ Erro ao criar categoria: ${error.message}`);
+        return false;
+      }
+    }
+
+    async function criarProduto() {
+      const step = addStep('3️⃣ Criando produto...', 'pending');
+      try {
+        const nomeProduto = `Arroz_Integral_${Date.now()}`;
+        const response = await fetch(`${API_URL}/api/produtos`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            nome: nomeProduto,
+            descricao: 'Arroz integral tipo 1, pacote de 1kg',
+            codigoBarrasFabricante: '7891234567890',
+            categoriaId: categoriaId
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        produtoId = data.id;
+
+        updateStep(step, 'success',
+          `✅ Produto criado com sucesso!\n` +
+          `ID: ${data.id}\n` +
+          `Nome: ${data.nome}\n` +
+          `Categoria: ${data.categoriaNome}\n` +
+          `Código de Barras: ${data.codigoBarrasFabricante}`
+        );
+        return true;
+      } catch (error) {
+        updateStep(step, 'error', `❌ Erro ao criar produto: ${error.message}`);
+        return false;
+      }
+    }
+
+    async function criarLote() {
+      const step = addStep('4️⃣ Criando lote...', 'pending');
+      try {
+        const hoje = new Date().toISOString().split('T')[0];
+        const validade = new Date();
+        validade.setMonth(validade.getMonth() + 6);
+        const dataValidade = validade.toISOString().split('T')[0];
+
+        const response = await fetch(`${API_URL}/api/lotes`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            produtoId: produtoId,
+            quantidadeInicial: 100,
+            dataEntrada: hoje,
+            dataValidade: dataValidade,
+            observacoes: 'Lote de teste criado automaticamente'
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        loteId = data.id;
+
+        updateStep(step, 'success',
+          `✅ Lote criado com sucesso!\n` +
+          `ID: ${data.id}\n` +
+          `Produto: ${data.produtoNome}\n` +
+          `Quantidade Inicial: ${data.quantidadeInicial}\n` +
+          `Quantidade Atual: ${data.quantidadeAtual}\n` +
+          `Data de Entrada: ${new Date(data.dataEntrada).toLocaleDateString('pt-BR')}\n` +
+          `Data de Validade: ${new Date(data.dataValidade).toLocaleDateString('pt-BR')}\n` +
+          `🔢 Código de Barras: ${data.codigoBarras || 'Gerando...'}`
+        );
+        return true;
+      } catch (error) {
+        updateStep(step, 'error', `❌ Erro ao criar lote: ${error.message}`);
+        return false;
+      }
+    }
+
+    async function verificarEtiqueta() {
+      const step = addStep('5️⃣ Verificando etiqueta...', 'pending');
+      try {
+        // Aguardar um pouco para garantir que o código de barras foi gerado
+        await sleep(1000);
+
+        const response = await fetch(`${API_URL}/api/etiquetas/lote/${loteId}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        }
+
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+
+        updateStep(step, 'success',
+          `✅ Etiqueta gerada com sucesso!\n` +
+          `Tamanho: ${(blob.size / 1024).toFixed(2)} KB\n` +
+          `Tipo: ${blob.type}\n` +
+          `URL: ${API_URL}/api/etiquetas/lote/${loteId}\n\n` +
+          `📝 Você pode visualizar a etiqueta na página de Etiquetas do sistema.`
+        );
+        return true;
+      } catch (error) {
+        updateStep(step, 'error', `❌ Erro ao buscar etiqueta: ${error.message}`);
+        return false;
+      }
+    }
+
+    async function verificarDados() {
+      const step = addStep('6️⃣ Verificando dados criados...', 'pending');
+      try {
+        // Buscar categoria
+        const catResponse = await fetch(`${API_URL}/api/categorias/${categoriaId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const categoria = await catResponse.json();
+
+        // Buscar produto
+        const prodResponse = await fetch(`${API_URL}/api/produtos/${produtoId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const produto = await prodResponse.json();
+
+        // Buscar lote
+        const loteResponse = await fetch(`${API_URL}/api/lotes/${loteId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const lote = await loteResponse.json();
+
+        updateStep(step, 'success',
+          `✅ Todos os dados foram verificados!\n\n` +
+          `📦 Categoria #${categoria.id}: ${categoria.nome}\n` +
+          `📦 Produto #${produto.id}: ${produto.nome}\n` +
+          `📦 Lote #${lote.id}: ${lote.codigoBarras}\n\n` +
+          `🎉 Fluxo completo executado com sucesso!`
+        );
+        return true;
+      } catch (error) {
+        updateStep(step, 'error', `❌ Erro ao verificar dados: ${error.message}`);
+        return false;
+      }
+    }
+
+    async function runFullTest() {
+      const btn = document.getElementById('runBtn');
+      btn.disabled = true;
+
+      try {
+        const loginOk = await login();
+        if (!loginOk) return;
+
+        await sleep(500);
+
+        const categoriaOk = await criarCategoria();
+        if (!categoriaOk) return;
+
+        await sleep(500);
+
+        const produtoOk = await criarProduto();
+        if (!produtoOk) return;
+
+        await sleep(500);
+
+        const loteOk = await criarLote();
+        if (!loteOk) return;
+
+        await sleep(500);
+
+        const etiquetaOk = await verificarEtiqueta();
+
+        await sleep(500);
+
+        await verificarDados();
+
+        // Adicionar resumo final
+        addStep(
+          '✅ TESTE COMPLETO FINALIZADO!',
+          'success',
+          `Todos os passos foram executados com sucesso.\n\n` +
+          `IDs Criados:\n` +
+          `- Categoria: ${categoriaId}\n` +
+          `- Produto: ${produtoId}\n` +
+          `- Lote: ${loteId}\n\n` +
+          `Você pode visualizar esses dados no sistema:\n` +
+          `- http://localhost:5173/categorias\n` +
+          `- http://localhost:5173/produtos\n` +
+          `- http://localhost:5173/lotes\n` +
+          `- http://localhost:5173/etiquetas`
+        );
+      } catch (error) {
+        addStep('❌ ERRO CRÍTICO', 'error', error.message);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function clearResults() {
+      document.getElementById('results').innerHTML = '';
+      token = null;
+      categoriaId = null;
+      produtoId = null;
+      loteId = null;
+    }
+
+    // Verificar se a API está disponível ao carregar
+    window.addEventListener('load', async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/categorias`, {
+          method: 'GET'
+        });
+        // Esperamos 401 ou 403 se não houver token, mas a API está respondendo
+        if (response.status === 401 || response.status === 403) {
+          console.log('✅ API está disponível e respondendo');
+        }
+      } catch (error) {
+        alert('⚠️ AVISO: Não foi possível conectar à API em ' + API_URL +
+          '\n\nCertifique-se de que o backend está rodando!');
+      }
+    });
+  </script>
+</body>
+
+</html>

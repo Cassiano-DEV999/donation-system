@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: ong-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ong_db
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    networks:
+      - ong-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ong-backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./.env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ong-network
+    restart: unless-stopped
+
+networks:
+  ong-network:
+    driver: bridge

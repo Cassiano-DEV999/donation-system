@@ -1,0 +1,165 @@
+package com.ong.backend.services;
+
+import com.ong.backend.dto.lote.LoteRequestDTO;
+import com.ong.backend.dto.lote.LoteResponseDTO;
+import com.ong.backend.dto.lote.LoteSimplesDTO;
+import com.ong.backend.dto.lote.LoteDetalhesDTO;
+import com.ong.backend.exceptions.BusinessException;
+import com.ong.backend.exceptions.ResourceNotFoundException;
+import com.ong.backend.models.Lote;
+import com.ong.backend.models.Produto;
+import com.ong.backend.repositories.LoteRepository;
+import com.ong.backend.repositories.MovimentacaoRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class LoteService {
+
+    private final LoteRepository loteRepository;
+    private final MovimentacaoRepository movimentacaoRepository;
+    private final ProdutoService produtoService;
+
+    @Transactional(readOnly = true)
+    public List<LoteResponseDTO> listarTodos() {
+        return loteRepository.findAll()
+                .stream()
+                .map(LoteResponseDTO::new)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<LoteSimplesDTO> listarTodosSimples() {
+        return loteRepository.findAll()
+                .stream()
+                .map(LoteSimplesDTO::new)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public LoteResponseDTO buscarPorId(Long id) {
+        Lote lote = loteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Lote", "id", id));
+        return new LoteResponseDTO(lote);
+    }
+
+    @Transactional(readOnly = true)
+    public LoteDetalhesDTO buscarDetalhesPorId(Long id) {
+        Lote lote = loteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Lote", "id", id));
+
+        Integer totalMovimentacoes = movimentacaoRepository.findByLoteId(id).size();
+
+        return new LoteDetalhesDTO(lote, totalMovimentacoes);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LoteResponseDTO> buscarPorProduto(Long produtoId) {
+        return loteRepository.findByProdutoId(produtoId)
+                .stream()
+                .map(LoteResponseDTO::new)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<LoteSimplesDTO> buscarProximosAoVencimento(int dias) {
+        LocalDate dataLimite = LocalDate.now().plusDays(dias);
+        return loteRepository.findByDataValidadeBefore(dataLimite)
+                .stream()
+                .filter(lote -> lote.getQuantidadeAtual() > 0) // Só lotes com estoque
+                .map(LoteSimplesDTO::new)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<LoteSimplesDTO> buscarComEstoque() {
+        return loteRepository.findByQuantidadeAtualGreaterThan(0)
+                .stream()
+                .map(LoteSimplesDTO::new)
+                .toList();
+    }
+
+    @Transactional
+    public LoteResponseDTO criar(LoteRequestDTO dto) {
+        Produto produto = produtoService.buscarEntidadePorId(dto.produtoId());
+
+        if (dto.quantidadeInicial() <= 0) {
+            throw new BusinessException("Quantidade inicial deve ser maior que zero");
+        }
+
+        Lote lote = new Lote();
+        lote.setProduto(produto);
+        lote.setQuantidadeInicial(dto.quantidadeInicial());
+        lote.setQuantidadeAtual(dto.quantidadeInicial()); // Inicia com a quantidade total
+        lote.setDataEntrada(dto.dataEntrada());
+        lote.setUnidadeMedida(dto.unidadeMedida());
+        lote.setDataValidade(dto.dataValidade());
+        lote.setTamanho(dto.tamanho());
+        lote.setVoltagem(dto.voltagem());
+        lote.setObservacoes(dto.observacoes());
+
+        lote = loteRepository.save(lote);
+        return new LoteResponseDTO(lote);
+    }
+
+    @Transactional
+    public LoteResponseDTO atualizar(Long id, LoteRequestDTO dto) {
+        Lote lote = loteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Lote", "id", id));
+
+        Produto produto = produtoService.buscarEntidadePorId(dto.produtoId());
+
+        lote.setProduto(produto);
+        // Não atualiza quantidades aqui - isso é feito via movimentações
+        lote.setDataEntrada(dto.dataEntrada());
+        lote.setUnidadeMedida(dto.unidadeMedida());
+        lote.setDataValidade(dto.dataValidade());
+        lote.setTamanho(dto.tamanho());
+        lote.setVoltagem(dto.voltagem());
+        lote.setObservacoes(dto.observacoes());
+
+        lote = loteRepository.save(lote);
+        return new LoteResponseDTO(lote);
+    }
+
+    @Transactional
+    public void deletar(Long id) {
+        Lote lote = loteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Lote", "id", id));
+
+        // Verifica se há movimentações associadas
+        if (!movimentacaoRepository.findByLoteId(id).isEmpty()) {
+            throw new BusinessException("Não é possível deletar um lote que possui movimentações");
+        }
+
+        loteRepository.delete(lote);
+    }
+
+    // Método auxiliar para atualizar quantidade (usado por MovimentacaoService)
+    @Transactional
+    public void atualizarQuantidade(Long loteId, int delta) {
+        Lote lote = loteRepository.findById(loteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lote", "id", loteId));
+
+        int novaQuantidade = lote.getQuantidadeAtual() + delta;
+
+        if (novaQuantidade < 0) {
+            throw new BusinessException("Quantidade insuficiente em estoque. Disponível: " + lote.getQuantidadeAtual());
+        }
+
+        lote.setQuantidadeAtual(novaQuantidade);
+        loteRepository.save(lote);
+    }
+
+    // Método auxiliar para buscar lote por ID (usado por outros services)
+    @Transactional(readOnly = true)
+    public Lote buscarEntidadePorId(Long id) {
+        return loteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Lote", "id", id));
+    }
+}
