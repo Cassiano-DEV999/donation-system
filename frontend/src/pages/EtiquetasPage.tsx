@@ -51,7 +51,6 @@ export function EtiquetasPage() {
       setLoadingEtiqueta(true);
       setErrorEtiqueta('');
 
-      // Buscar etiqueta com autenticação
       const token = localStorage.getItem('token');
       const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -66,7 +65,6 @@ export function EtiquetasPage() {
       const blob = await response.blob();
       const imageUrl = URL.createObjectURL(blob);
 
-      // Limpar URL anterior se existir
       if (etiquetaUrl) {
         URL.revokeObjectURL(etiquetaUrl);
       }
@@ -102,7 +100,6 @@ export function EtiquetasPage() {
     }
   };
 
-  // Limpar blob URL ao desmontar componente
   useEffect(() => {
     return () => {
       if (etiquetaUrl) {

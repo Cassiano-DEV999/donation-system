@@ -27,7 +27,6 @@ export interface Movimentacao {
     email: string;
     perfil: string;
   };
-  // Campos legados (para compatibilidade)
   loteProdutoNome?: string;
   usuarioNome?: string;
 }

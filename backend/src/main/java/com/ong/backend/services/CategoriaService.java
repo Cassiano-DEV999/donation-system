@@ -62,7 +62,6 @@ public class CategoriaService {
         Categoria categoria = categoriaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria", "id", id));
 
-        // Verifica se o novo nome já existe em outra categoria
         if (!categoria.getNome().equals(dto.nome()) && categoriaRepository.existsByNome(dto.nome())) {
             throw new BusinessException("Já existe uma categoria com o nome: " + dto.nome());
         }
@@ -83,7 +82,6 @@ public class CategoriaService {
         categoriaRepository.delete(categoria);
     }
 
-    // Método auxiliar para buscar categoria por ID (usado por outros services)
     @Transactional(readOnly = true)
     public Categoria buscarEntidadePorId(Long id) {
         return categoriaRepository.findById(id)

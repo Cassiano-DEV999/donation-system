@@ -64,7 +64,7 @@ public class UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setNome(dto.nome());
         usuario.setEmail(dto.email());
-        usuario.setSenha(passwordEncoder.encode(dto.senha())); // Hash da senha
+        usuario.setSenha(passwordEncoder.encode(dto.senha()));
         usuario.setPerfil(dto.perfil());
 
         usuario = usuarioRepository.save(usuario);
@@ -76,7 +76,6 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", id));
 
-        // Verifica se o novo email já existe em outro usuário
         if (!usuario.getEmail().equals(dto.email()) && usuarioRepository.existsByEmail(dto.email())) {
             throw new BusinessException("Já existe um usuário com o email: " + dto.email());
         }
@@ -84,7 +83,6 @@ public class UsuarioService {
         usuario.setNome(dto.nome());
         usuario.setEmail(dto.email());
         
-        // Só atualiza a senha se foi fornecida
         if (dto.senha() != null && !dto.senha().isBlank()) {
             usuario.setSenha(passwordEncoder.encode(dto.senha()));
         }
@@ -103,7 +101,6 @@ public class UsuarioService {
         usuarioRepository.delete(usuario);
     }
 
-    // Método auxiliar para buscar usuário por ID (usado por outros services)
     @Transactional(readOnly = true)
     public Usuario buscarEntidadePorId(Long id) {
         return usuarioRepository.findById(id)

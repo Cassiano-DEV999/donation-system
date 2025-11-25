@@ -51,7 +51,6 @@ public class ProdutoService {
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto", "id", id));
 
-        // Calcula o total em estoque somando quantidadeAtual de todos os lotes
         Integer totalEmEstoque = loteRepository.findByProdutoId(id)
                 .stream()
                 .mapToInt(lote -> lote.getQuantidadeAtual())
@@ -114,7 +113,6 @@ public class ProdutoService {
         produtoRepository.delete(produto);
     }
 
-    // Método auxiliar para buscar produto por ID (usado por outros services)
     @Transactional(readOnly = true)
     public Produto buscarEntidadePorId(Long id) {
         return produtoRepository.findById(id)

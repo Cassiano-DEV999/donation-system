@@ -30,19 +30,16 @@ public class SecurityConfig {
                 .cors(cors -> cors.configure(http))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Swagger/OpenAPI
                         .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        // Auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll() // Registro público
-                        // APIs protegidas
+                        .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
                         .requestMatchers("/api/categorias/**").hasAnyRole("ADMIN", "VOLUNTARIO")
                         .requestMatchers("/api/produtos/**").hasAnyRole("ADMIN", "VOLUNTARIO")
                         .requestMatchers("/api/lotes/**").hasAnyRole("ADMIN", "VOLUNTARIO")
                         .requestMatchers("/api/movimentacoes/**").hasAnyRole("ADMIN", "VOLUNTARIO")
                         .requestMatchers("/api/etiquetas/**").hasAnyRole("ADMIN", "VOLUNTARIO")
-                        .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN") // Só ADMIN pode deletar
-                        .requestMatchers("/api/usuarios/**").hasRole("ADMIN") // Gestão de usuários só ADMIN
+                        .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
+                        .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

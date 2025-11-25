@@ -23,7 +23,6 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void initializeAdminUsers() {
-        // Admin 1
         if (usuarioRepository.findByEmail("admin@ong.com").isEmpty()) {
             Usuario admin1 = new Usuario();
             admin1.setNome("Administrador Principal");
@@ -34,7 +33,6 @@ public class DataInitializer implements CommandLineRunner {
             log.info("✅ Usuário admin criado: admin@ong.com / admin123");
         }
 
-        // Admin 2
         if (usuarioRepository.findByEmail("admin2@ong.com").isEmpty()) {
             Usuario admin2 = new Usuario();
             admin2.setNome("Administrador Secundário");

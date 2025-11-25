@@ -41,13 +41,11 @@ export default function DashboardPage() {
         movimentacaoService.getAll(),
       ])
 
-      // Contar movimentações de hoje
       const hoje = new Date().toISOString().split('T')[0]
       const movimentacoesHoje = movimentacoes.filter(m =>
         m.dataHora.startsWith(hoje)
       ).length
 
-      // Calcular estoque total
       const estoqueTotal = lotes.reduce((sum, lote) => sum + lote.quantidadeAtual, 0)
 
       setStats({
@@ -58,7 +56,6 @@ export default function DashboardPage() {
         estoqueTotal,
       })
 
-      // Dados por categoria (tipo)
       const tipoCount: Record<string, number> = {}
       categorias.forEach(cat => {
         tipoCount[cat.tipo] = (tipoCount[cat.tipo] || 0) + 1
@@ -88,7 +85,6 @@ export default function DashboardPage() {
         }))
       )
 
-      // Movimentações dos últimos 7 dias
       const ultimos7Dias = Array.from({ length: 7 }, (_, i) => {
         const data = new Date()
         data.setDate(data.getDate() - (6 - i))
@@ -107,7 +103,6 @@ export default function DashboardPage() {
 
       setMovimentacaoData(movPorDia)
 
-      // Tipos de movimentação
       const tipoMovCount: Record<string, number> = {
         ENTRADA: 0,
         SAIDA: 0,
@@ -133,7 +128,6 @@ export default function DashboardPage() {
         }))
       )
 
-      // Últimas 10 movimentações
       const ultimasMovs = movimentacoes
         .sort((a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime())
         .slice(0, 10)

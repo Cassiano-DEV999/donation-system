@@ -1,163 +1,90 @@
-# Sistema de Gestão de Doações - ONG
+# 🎁 Sistema de Gestão de Doações
 
-Sistema completo para gerenciamento de doações de ONGs, desenvolvido com Spring Boot e React.
+Sistema completo para gerenciamento de doações de ONGs com controle de estoque, rastreabilidade e geração de etiquetas com código de barras.
 
-## 🚀 Tecnologias
+## 📖 História do Projeto
+
+Este sistema foi desenvolvido para auxiliar organizações não governamentais (ONGs) no gerenciamento eficiente de doações recebidas. O projeto surgiu da necessidade de ter um controle rigoroso de estoque, rastreabilidade de produtos e facilitar a distribuição de itens doados.
+
+O sistema permite que voluntários e administradores façam o cadastro de produtos recebidos, organizem-nos por categorias (alimentos, vestuário, eletrônicos, higiene, etc.), controlem lotes com validade, gerem etiquetas com código de barras EAN-13 e acompanhem todas as movimentações de entrada e saída.
+
+## ✨ Principais Funcionalidades
+
+- **Dashboard Interativo** - Visão geral com estatísticas em tempo real e gráficos
+- **Gestão de Categorias** - Organize doações por tipo (alimentos, vestuário, eletrônicos, higiene, outros)
+- **Controle de Produtos** - Cadastre e gerencie todos os produtos recebidos
+- **Sistema de Lotes** - Controle de quantidade, validade, tamanho, voltagem e observações
+- **Movimentações** - Registre entradas, saídas, perdas e ganhos de estoque
+- **Etiquetas com Código de Barras** - Gere e imprima etiquetas EAN-13 em diferentes tamanhos
+- **Autenticação JWT** - Sistema seguro com perfis ADMIN e VOLUNTARIO
+- **API RESTful Documentada** - Swagger/OpenAPI para integração
+
+## 🚀 Tecnologias Utilizadas
 
 ### Backend
-- **Spring Boot 3.5.8** - Framework Java
-- **PostgreSQL 15** - Banco de dados
-- **JWT** - Autenticação e autorização
+- **Spring Boot 3.5.8** - Framework Java para APIs REST
+- **PostgreSQL 15** - Banco de dados relacional
+- **Spring Security + JWT** - Autenticação e autorização
 - **ZXing** - Geração de códigos de barras EAN-13
-- **Swagger/OpenAPI** - Documentação da API
-- **Docker** - Containerização
+- **Springdoc OpenAPI 2.7.0** - Documentação automática da API
+- **Docker** - Containerização e ambiente isolado
 
 ### Frontend
-- **React 19.2.0** - Framework JavaScript
-- **TypeScript** - Tipagem estática
-- **Vite** - Build tool
-- **Tailwind CSS** - Estilização
-- **shadcn/ui** - Biblioteca de componentes
-- **React Router** - Roteamento
+- **React 19.2.0** - Biblioteca JavaScript moderna
+- **TypeScript** - Tipagem estática e segurança
+- **Vite** - Build tool rápido
+- **Tailwind CSS** - Framework CSS utilitário
+- **shadcn/ui** - Componentes UI acessíveis e customizáveis
+- **Recharts** - Gráficos e visualizações
+- **React Router** - Navegação SPA
 - **Axios** - Cliente HTTP
 
-## 📋 Funcionalidades
+## 🛠️ Como Rodar o Projeto
 
-### Autenticação
-- Login com email/senha
-- Registro de novos usuários
-- JWT com informações do usuário (id, nome, perfil)
-- Controle de acesso baseado em perfis (ADMIN/VOLUNTARIO)
+### Pré-requisitos
 
-### Dashboard
-- Estatísticas em tempo real:
-  - Total de categorias
-  - Total de produtos
-  - Total de lotes
-  - Movimentações do dia
-  - Produtos com estoque baixo
-  - Lotes próximos ao vencimento
+- Docker e Docker Compose instalados
+- Node.js 18+ (para desenvolvimento do frontend)
+- Java 17+ (para desenvolvimento do backend)
+- Git
 
-### Gestão de Categorias
-- Listar todas as categorias
-- Criar nova categoria
-- Editar categoria existente
-- Excluir categoria
+### ⚠️ IMPORTANTE: Configuração do .env
 
-### Gestão de Produtos
-- Listar todos os produtos
-- Criar novo produto (com categoria)
-- Editar produto existente
-- Excluir produto
-- Código de barras do fabricante (opcional)
-
-### Gestão de Lotes
-- Listar todos os lotes
-- Criar novo lote com:
-  - Produto associado
-  - Quantidade inicial
-  - Data de entrada
-  - Data de validade (opcional - alimentos)
-  - Tamanho (opcional - roupas)
-  - Voltagem (opcional - eletrônicos)
-  - Observações
-- Editar lote (incluindo quantidade atual)
-- Excluir lote
-- Código de barras EAN-13 gerado automaticamente
-
-### Gestão de Movimentações
-- Listar movimentações
-- Registrar nova movimentação:
-  - ENTRADA - Entrada de produtos
-  - SAÍDA - Saída de produtos
-  - AJUSTE_PERDA - Ajuste por perda
-  - AJUSTE_GANHO - Ajuste por ganho
-- Filtros por:
-  - Período (data início/fim)
-  - Tipo de movimentação
-  - Lote específico
-- Atualização automática da quantidade do lote
-
-### Etiquetas
-- Visualizar etiqueta de lote com código de barras
-- Selecionar lote por produto
-- Imprimir etiqueta
-
-### Gestão de Usuários (ADMIN)
-- Listar todos os usuários
-- Criar novo usuário
-- Editar usuário (incluindo troca de perfil)
-- Excluir usuário
-- Perfis: ADMIN e VOLUNTARIO
-
-## 🔧 Configuração
-
-### Requisitos
-- Java 17+
-- Docker e Docker Compose
-- Node.js 18+
-- npm ou yarn
-
-### Banco de Dados
-
-O sistema utiliza PostgreSQL via Docker. Configure as credenciais no `docker-compose.yml`:
-
-```yaml
-environment:
-  POSTGRES_DB: ong_db
-  POSTGRES_USER: ong_user
-  POSTGRES_PASSWORD: ong_password
-```
-
-### Backend
-
-1. Configure o arquivo `backend/src/main/resources/application.properties`:
-
-```properties
-spring.application.name=backend
-
-# Database
-spring.datasource.url=jdbc:postgresql://localhost:5432/ong_db
-spring.datasource.username=ong_user
-spring.datasource.password=ong_password
-
-# JPA/Hibernate
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=false
-spring.jpa.properties.hibernate.format_sql=true
-
-# JWT Secret
-jwt.secret=your-secret-key-here-make-it-long-and-secure
-jwt.expiration=86400000
-
-# Swagger
-springdoc.api-docs.path=/api-docs
-springdoc.swagger-ui.path=/swagger-ui.html
-```
-
-2. O DataInitializer criará automaticamente 2 usuários admin:
-   - **Email:** admin@ong.com | **Senha:** admin123
-   - **Email:** admin2@ong.com | **Senha:** admin123
-
-### Frontend
-
-1. Configure o arquivo `frontend/.env`:
-
-```env
-VITE_API_URL=http://localhost:8080
-```
-
-## 🚀 Executando o Projeto
-
-### Com Docker (Recomendado)
-
-1. **Inicie o banco de dados e o backend:**
+**Antes de iniciar o projeto, você PRECISA configurar o arquivo `.env`:**
 
 ```bash
-docker-compose up -d
+cd backend
+cp .env.example .env
 ```
 
-2. **Inicie o frontend (em outro terminal):**
+Edite o arquivo `.env` e configure suas variáveis de ambiente, especialmente:
+- `JWT_SECRET` - Troque por uma chave secreta forte em produção
+- Credenciais do banco de dados (se necessário)
+
+### 1. Clone o Repositório
+
+```bash
+git clone https://github.com/Cassiano-DEV999/donation-system.git
+cd donation-system
+```
+
+### 2. Rodando com Docker (Recomendado)
+
+#### Backend
+
+```bash
+cd backend
+cp .env.example .env  # Configure suas variáveis de ambiente
+docker compose up --build -d
+```
+
+O backend estará disponível em `http://localhost:8080`
+
+**Usuários padrão criados automaticamente:**
+- `admin@ong.com` / `admin123`
+- `admin2@ong.com` / `admin123`
+
+#### Frontend
 
 ```bash
 cd frontend
@@ -165,8 +92,160 @@ npm install
 npm run dev
 ```
 
-3. **Acesse:**
-   - Frontend: http://localhost:5173
+O frontend estará disponível em `http://localhost:5173`
+
+### 3. Rodando sem Docker (Desenvolvimento)
+
+#### Backend
+
+```bash
+cd backend
+cp .env.example .env  # OBRIGATÓRIO: Configure suas variáveis
+./mvnw spring-boot:run
+```
+
+#### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### 4. Acessando o Sistema
+
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:8080
+- **Swagger UI**: http://localhost:8080/swagger-ui/index.html
+- **API Docs JSON**: http://localhost:8080/api-docs
+
+## 📚 Documentação da API
+
+Toda a documentação da API está disponível no Swagger UI:
+
+**http://localhost:8080/swagger-ui/index.html**
+
+Teste todos os endpoints interativamente. Para rotas protegidas, faça login em `/api/auth/login` e use o token no botão "Authorize".
+
+## 🏗️ Estrutura do Projeto
+
+```
+donation-system/
+├── backend/
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/ong/backend/
+│   │   │   │   ├── config/          # Configurações (Security, CORS, OpenAPI)
+│   │   │   │   ├── controllers/     # Endpoints REST
+│   │   │   │   ├── dto/             # Data Transfer Objects
+│   │   │   │   ├── exceptions/      # Tratamento de exceções
+│   │   │   │   ├── models/          # Entidades JPA
+│   │   │   │   ├── repositories/    # Repositórios JPA
+│   │   │   │   ├── security/        # JWT e autenticação
+│   │   │   │   └── services/        # Lógica de negócio
+│   │   │   └── resources/
+│   │   │       └── application.properties
+│   │   └── test/
+│   ├── docker-compose.yml
+│   ├── Dockerfile
+│   └── pom.xml
+└── frontend/
+    ├── src/
+    │   ├── components/      # Componentes reutilizáveis
+    │   ├── contexts/        # Context API (AuthContext)
+    │   ├── lib/            # Utilitários (axios, utils)
+    │   ├── pages/          # Páginas da aplicação
+    │   └── services/       # Serviços de API
+    ├── package.json
+    └── vite.config.ts
+```
+
+## 🤝 Como Contribuir
+
+Contribuições são muito bem-vindas! Siga os passos abaixo:
+
+### 1. Fork o Projeto
+
+Clique no botão "Fork" no topo desta página.
+
+### 2. Clone seu Fork
+
+```bash
+git clone https://github.com/SEU-USUARIO/donation-system.git
+cd donation-system
+```
+
+### 3. Crie uma Branch
+
+```bash
+git checkout -b feature/minha-contribuicao
+```
+
+### 4. Faça suas Alterações
+
+- Mantenha o código limpo e bem documentado
+- Siga os padrões de código existentes
+- Teste suas alterações localmente
+
+### 5. Commit e Push
+
+```bash
+git add .
+git commit -m "feat: adiciona nova funcionalidade X"
+git push origin feature/minha-contribuicao
+```
+
+### 6. Abra um Pull Request
+
+Vá até o repositório original e clique em "New Pull Request". Descreva suas alterações de forma clara e objetiva.
+
+## 📝 Convenções de Commit
+
+Utilizamos commits semânticos:
+
+- `feat:` - Nova funcionalidade
+- `fix:` - Correção de bug
+- `docs:` - Alterações na documentação
+- `style:` - Formatação, ponto e vírgula, etc
+- `refactor:` - Refatoração de código
+- `test:` - Adição ou modificação de testes
+- `chore:` - Tarefas de build, configurações, etc
+
+## 🐛 Reportando Bugs
+
+Encontrou um bug? Abra uma [issue](https://github.com/Cassiano-DEV999/donation-system/issues) com:
+
+- Descrição clara do problema
+- Passos para reproduzir
+- Comportamento esperado vs atual
+- Screenshots (se aplicável)
+- Ambiente (SO, versão do Node, Docker, etc)
+
+## 💡 Sugestões de Melhorias
+
+Tem uma ideia? Abra uma [issue](https://github.com/Cassiano-DEV999/donation-system/issues) com a tag `enhancement` descrevendo sua sugestão.
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## 👨‍💻 Autor
+
+**Cassiano Melo**
+
+- GitHub: [@Cassiano-DEV999](https://github.com/Cassiano-DEV999)
+- Email: cassianomeloprofissional@gmail.com
+
+## 🙏 Agradecimentos
+
+- Comunidade Spring Boot
+- Comunidade React
+- shadcn/ui pela excelente biblioteca de componentes
+- Todas as ONGs que inspiraram este projeto
+
+---
+
+⭐ Se este projeto foi útil para você, considere dar uma estrela no repositório!
    - Backend: http://localhost:8080
    - Swagger: http://localhost:8080/swagger-ui.html
 
@@ -352,5 +431,6 @@ Este projeto foi desenvolvido para fins educacionais e de gestão de ONGs.
 ## 👥 Contribuindo
 
 Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar pull requests.
-#   d o n a t i o n - s y s t e m  
+#   d o n a t i o n - s y s t e m 
+ 
  

@@ -19,13 +19,13 @@ public class Movimentacao {
     @JoinColumn(name = "lote_id", nullable = false)
     private Lote lote;
 
-    @ManyToOne(optional = false) // Sempre tem que ter um responsável
+    @ManyToOne(optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TipoMovimentacao tipo; // ENTRADA ou SAIDA
+    private TipoMovimentacao tipo;
 
     @Column(nullable = false)
     private Integer quantidade;
@@ -33,7 +33,6 @@ public class Movimentacao {
     @Column(nullable = false)
     private LocalDateTime dataHora;
 
-    // Construtor utilitário para facilitar a criação no código
     public Movimentacao(Lote lote, Usuario usuario, TipoMovimentacao tipo, Integer quantidade) {
         this.lote = lote;
         this.usuario = usuario;

@@ -23,8 +23,4 @@ public class Categoria {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoCategoria tipo;
-
-    // Opcional: Se quiser saber quais produtos são dessa categoria
-    // @OneToMany(mappedBy = "categoria")
-    // private List<Produto> produtos;
 }

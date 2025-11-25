@@ -51,9 +51,8 @@ export function UsuariosPage() {
     confirmSenha: '',
     perfil: '',
   });
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState(false)
 
-  // Verifica se o usuário é admin
   useEffect(() => {
     if (user?.perfil !== 'ADMIN') {
       navigate('/dashboard');

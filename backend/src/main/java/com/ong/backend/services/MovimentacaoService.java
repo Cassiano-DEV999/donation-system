@@ -53,7 +53,6 @@ public class MovimentacaoService {
         Movimentacao movimentacao = movimentacaoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Movimentação", "id", id));
 
-        // Calcula quantidade anterior e atual baseado no tipo de movimentação
         int quantidadeAtual = movimentacao.getLote().getQuantidadeAtual();
         int quantidadeAnterior = calcularQuantidadeAnterior(movimentacao, quantidadeAtual);
 
@@ -97,13 +96,10 @@ public class MovimentacaoService {
         Lote lote = loteService.buscarEntidadePorId(dto.loteId());
         Usuario usuario = usuarioService.buscarEntidadePorId(dto.usuarioId());
 
-        // Calcula o delta baseado no tipo de movimentação
         int delta = calcularDelta(dto.tipo(), dto.quantidade());
 
-        // Atualiza a quantidade do lote
         loteService.atualizarQuantidade(dto.loteId(), delta);
 
-        // Cria a movimentação
         Movimentacao movimentacao = new Movimentacao();
         movimentacao.setLote(lote);
         movimentacao.setUsuario(usuario);
@@ -123,11 +119,10 @@ public class MovimentacaoService {
         movimentacaoRepository.delete(movimentacao);
     }
 
-    // Métodos auxiliares
     private int calcularDelta(TipoMovimentacao tipo, int quantidade) {
         return switch (tipo) {
-            case ENTRADA, AJUSTE_GANHO -> quantidade;  // Positivo
-            case SAIDA, AJUSTE_PERDA -> -quantidade;   // Negativo
+            case ENTRADA, AJUSTE_GANHO -> quantidade;
+            case SAIDA, AJUSTE_PERDA -> -quantidade;
         };
     }
 

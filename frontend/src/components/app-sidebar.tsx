@@ -58,7 +58,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
   ]
 
-  // Adiciona opção de usuários apenas para ADMIN
   if (user?.perfil === "ADMIN") {
     navMain.push({
       title: "Usuários",

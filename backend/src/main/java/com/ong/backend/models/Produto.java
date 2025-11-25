@@ -15,11 +15,10 @@ public class Produto {
     private Long id;
 
     @Column(nullable = false)
-    private String nome; // Ex: "Arroz Tipo 1"
+    private String nome;
 
     private String descricao;
 
-    // Código EAN original do pacote (se tiver)
     private String codigoBarrasFabricante; 
 
     @ManyToOne

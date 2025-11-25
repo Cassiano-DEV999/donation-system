@@ -23,7 +23,7 @@ public class Usuario {
     private String email;
 
     @Column(nullable = false)
-    private String senha; // Será o Hash da senha
+    private String senha;
 
     @Enumerated(EnumType.STRING)
     private PerfilUsuario perfil;

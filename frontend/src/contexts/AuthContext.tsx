@@ -20,16 +20,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Função para decodificar o token JWT
 function decodeToken(token: string): User | null {
   try {
     const payload = token.split('.')[1];
     const decoded = JSON.parse(atob(payload));
 
     return {
-      id: decoded.userId,
+      id: decoded.id,
       nome: decoded.nome,
-      email: decoded.sub, // subject é o email
+      email: decoded.sub,
       perfil: decoded.perfil,
     };
   } catch (error) {
@@ -44,7 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Limpar localStorage antigo que tinha 'user'
     localStorage.removeItem('user');
 
     const storedToken = localStorage.getItem('token');
@@ -80,7 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (nome: string, email: string, senha: string, perfil: 'ADMIN' | 'VOLUNTARIO') => {
     await api.post('/api/usuarios', { nome, email, senha, perfil });
-    // Após cadastro, faz login automático
     await login(email, senha);
   };
 

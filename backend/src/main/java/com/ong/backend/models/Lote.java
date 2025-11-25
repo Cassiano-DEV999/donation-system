@@ -32,17 +32,14 @@ public class Lote {
     @Column(nullable = false)
     private UnidadeMedida unidadeMedida;
 
-    // --- Campos Dinâmicos (Podem ser nulos dependendo da Categoria) ---
-    private LocalDate dataValidade; // Crítico para Alimentos
-    private String tamanho;         // Para Roupas
-    private String voltagem;        // Para Eletrônicos
-    private String observacoes;     // "Amassado", "Sem fio"
+    private LocalDate dataValidade;
+    private String tamanho;
+    private String voltagem;
+    private String observacoes;
 
-    // --- Lógica do Código de Barras Interno (EAN-13) ---
-    @Transient // Não salva no banco, calcula na hora
+    @Transient
     public String getCodigoBarras() {
         if (this.id == null) return null;
-        // Prefixo 2 (Uso interno) + ID formatado com 11 dígitos
         String prefixo = "2";
         String corpo = String.format("%011d", this.id);
         String codigoSemDigito = prefixo + corpo;
@@ -55,7 +52,6 @@ public class Lote {
         int soma = 0;
         for (int i = 0; i < codigo.length(); i++) {
             int n = Character.getNumericValue(codigo.charAt(i));
-            // Posições pares peso 3, impares peso 1 (Lógica EAN padrão)
             soma += (i % 2 == 0) ? n : n * 3;
         }
         int resto = soma % 10;

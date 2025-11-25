@@ -71,7 +71,7 @@ public class LoteService {
         LocalDate dataLimite = LocalDate.now().plusDays(dias);
         return loteRepository.findByDataValidadeBefore(dataLimite)
                 .stream()
-                .filter(lote -> lote.getQuantidadeAtual() > 0) // Só lotes com estoque
+                .filter(lote -> lote.getQuantidadeAtual() > 0)
                 .map(LoteSimplesDTO::new)
                 .toList();
     }
@@ -95,7 +95,7 @@ public class LoteService {
         Lote lote = new Lote();
         lote.setProduto(produto);
         lote.setQuantidadeInicial(dto.quantidadeInicial());
-        lote.setQuantidadeAtual(dto.quantidadeInicial()); // Inicia com a quantidade total
+        lote.setQuantidadeAtual(dto.quantidadeInicial());
         lote.setDataEntrada(dto.dataEntrada());
         lote.setUnidadeMedida(dto.unidadeMedida());
         lote.setDataValidade(dto.dataValidade());
@@ -115,7 +115,6 @@ public class LoteService {
         Produto produto = produtoService.buscarEntidadePorId(dto.produtoId());
 
         lote.setProduto(produto);
-        // Não atualiza quantidades aqui - isso é feito via movimentações
         lote.setDataEntrada(dto.dataEntrada());
         lote.setUnidadeMedida(dto.unidadeMedida());
         lote.setDataValidade(dto.dataValidade());
@@ -132,7 +131,6 @@ public class LoteService {
         Lote lote = loteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lote", "id", id));
 
-        // Verifica se há movimentações associadas
         if (!movimentacaoRepository.findByLoteId(id).isEmpty()) {
             throw new BusinessException("Não é possível deletar um lote que possui movimentações");
         }
@@ -140,7 +138,6 @@ public class LoteService {
         loteRepository.delete(lote);
     }
 
-    // Método auxiliar para atualizar quantidade (usado por MovimentacaoService)
     @Transactional
     public void atualizarQuantidade(Long loteId, int delta) {
         Lote lote = loteRepository.findById(loteId)
@@ -156,7 +153,6 @@ public class LoteService {
         loteRepository.save(lote);
     }
 
-    // Método auxiliar para buscar lote por ID (usado por outros services)
     @Transactional(readOnly = true)
     public Lote buscarEntidadePorId(Long id) {
         return loteRepository.findById(id)

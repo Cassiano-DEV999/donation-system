@@ -19,7 +19,7 @@ public class JwtUtil {
     @Value("${jwt.secret:minha-chave-secreta-super-segura-para-jwt-token-donation-system-2024}")
     private String secret;
 
-    @Value("${jwt.expiration:86400000}") // 24 horas em millisegundos
+    @Value("${jwt.expiration:86400000}")
     private Long expiration;
 
     private Key getSigningKey() {

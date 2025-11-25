@@ -48,7 +48,6 @@ export function PerfilPage() {
         email: formData.email,
       };
 
-      // Só inclui senha se o usuário preencheu
       if (formData.novaSenha) {
         if (formData.novaSenha.length < 6) {
           toast.error('A nova senha deve ter pelo menos 6 caracteres');
@@ -65,7 +64,6 @@ export function PerfilPage() {
 
       toast.success('Perfil atualizado com sucesso!');
 
-      // Limpar campos de senha
       setFormData({
         ...formData,
         senhaAtual: '',
