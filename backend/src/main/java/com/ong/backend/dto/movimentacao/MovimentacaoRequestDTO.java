@@ -9,8 +9,7 @@ public record MovimentacaoRequestDTO(
     @NotNull(message = "Lote é obrigatório")
     Long loteId,
     
-    @NotNull(message = "Usuário é obrigatório")
-    Long usuarioId,
+    Long usuarioId, // Opcional - se não informado, usa o usuário autenticado
     
     @NotNull(message = "Tipo de movimentação é obrigatório")
     TipoMovimentacao tipo,

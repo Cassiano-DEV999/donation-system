@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -15,9 +17,8 @@ public class Lote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "produto_id", nullable = false)
-    private Produto produto;
+    @OneToMany(mappedBy = "lote", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LoteItem> itens = new ArrayList<>();
 
     @Column(nullable = false)
     private Integer quantidadeInicial;
@@ -32,9 +33,6 @@ public class Lote {
     @Column(nullable = false)
     private UnidadeMedida unidadeMedida;
 
-    private LocalDate dataValidade;
-    private String tamanho;
-    private String voltagem;
     private String observacoes;
 
     @Transient

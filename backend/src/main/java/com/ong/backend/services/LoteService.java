@@ -25,6 +25,7 @@ public class LoteService {
     private final LoteRepository loteRepository;
     private final MovimentacaoRepository movimentacaoRepository;
     private final ProdutoService produtoService;
+    private final UsuarioService usuarioService;
 
     @Transactional(readOnly = true)
     public List<LoteResponseDTO> listarTodos() {
@@ -39,7 +40,7 @@ public class LoteService {
         List<Lote> lotes = loteRepository.findAll();
         
         return lotes.stream()
-                .filter(l -> produtoId == null || l.getProduto().getId().equals(produtoId))
+                .filter(l -> produtoId == null || l.getItens().stream().anyMatch(item -> item.getProduto().getId().equals(produtoId)))
                 .filter(l -> dataEntradaInicio == null || dataEntradaInicio.trim().isEmpty() || !l.getDataEntrada().isBefore(LocalDate.parse(dataEntradaInicio)))
                 .filter(l -> dataEntradaFim == null || dataEntradaFim.trim().isEmpty() || !l.getDataEntrada().isAfter(LocalDate.parse(dataEntradaFim)))
                 .filter(l -> comEstoque == null || !comEstoque || l.getQuantidadeAtual() > 0)
@@ -74,8 +75,9 @@ public class LoteService {
 
     @Transactional(readOnly = true)
     public List<LoteResponseDTO> buscarPorProduto(Long produtoId) {
-        return loteRepository.findByProdutoId(produtoId)
+        return loteRepository.findAll()
                 .stream()
+                .filter(l -> l.getItens().stream().anyMatch(item -> item.getProduto().getId().equals(produtoId)))
                 .map(LoteResponseDTO::new)
                 .toList();
     }
@@ -83,9 +85,12 @@ public class LoteService {
     @Transactional(readOnly = true)
     public List<LoteSimplesDTO> buscarProximosAoVencimento(int dias) {
         LocalDate dataLimite = LocalDate.now().plusDays(dias);
-        return loteRepository.findByDataValidadeBefore(dataLimite)
+        return loteRepository.findAll()
                 .stream()
                 .filter(lote -> lote.getQuantidadeAtual() > 0)
+                .filter(lote -> lote.getItens().stream()
+                        .anyMatch(item -> item.getDataValidade() != null && 
+                                         item.getDataValidade().isBefore(dataLimite)))
                 .map(LoteSimplesDTO::new)
                 .toList();
     }
@@ -99,26 +104,62 @@ public class LoteService {
     }
 
     @Transactional
-    public LoteResponseDTO criar(LoteRequestDTO dto) {
-        Produto produto = produtoService.buscarEntidadePorId(dto.produtoId());
+    public LoteResponseDTO criar(LoteRequestDTO dto, String emailUsuarioAutenticado) {
+        // Calcular quantidade total
+        int quantidadeTotal = dto.itens().stream()
+                .mapToInt(item -> item.quantidade())
+                .sum();
 
-        if (dto.quantidadeInicial() <= 0) {
-            throw new BusinessException("Quantidade inicial deve ser maior que zero");
+        if (quantidadeTotal <= 0) {
+            throw new BusinessException("Quantidade total deve ser maior que zero");
         }
 
+        // Criar lote
         Lote lote = new Lote();
-        lote.setProduto(produto);
-        lote.setQuantidadeInicial(dto.quantidadeInicial());
-        lote.setQuantidadeAtual(dto.quantidadeInicial());
+        lote.setQuantidadeInicial(quantidadeTotal);
+        lote.setQuantidadeAtual(quantidadeTotal);
         lote.setDataEntrada(dto.dataEntrada());
         lote.setUnidadeMedida(dto.unidadeMedida());
-        lote.setDataValidade(dto.dataValidade());
-        lote.setTamanho(dto.tamanho());
-        lote.setVoltagem(dto.voltagem());
         lote.setObservacoes(dto.observacoes());
 
+        // Salvar lote primeiro para gerar ID
         lote = loteRepository.save(lote);
+
+        // Criar itens do lote
+        Lote finalLote = lote;
+        dto.itens().forEach(itemDto -> {
+            Produto produto = produtoService.buscarEntidadePorId(itemDto.produtoId());
+            
+            com.ong.backend.models.LoteItem item = new com.ong.backend.models.LoteItem();
+            item.setLote(finalLote);
+            item.setProduto(produto);
+            item.setQuantidade(itemDto.quantidade());
+            item.setDataValidade(itemDto.dataValidade());
+            item.setTamanho(itemDto.tamanho());
+            item.setVoltagem(itemDto.voltagem());
+            
+            finalLote.getItens().add(item);
+        });
+
+        lote = loteRepository.save(lote);
+
+        // Auto-criar movimentação de ENTRADA
+        criarMovimentacaoEntrada(lote, emailUsuarioAutenticado);
+
         return new LoteResponseDTO(lote);
+    }
+
+    private void criarMovimentacaoEntrada(Lote lote, String emailUsuarioAutenticado) {
+        com.ong.backend.models.Usuario usuario = usuarioService.buscarEntidadePorEmail(emailUsuarioAutenticado);
+        
+        com.ong.backend.models.Movimentacao movimentacao = new com.ong.backend.models.Movimentacao();
+        movimentacao.setLote(lote);
+        movimentacao.setUsuario(usuario);
+        movimentacao.setTipo(com.ong.backend.models.TipoMovimentacao.ENTRADA);
+        movimentacao.setQuantidade(lote.getQuantidadeInicial());
+        movimentacao.setDataHora(java.time.LocalDateTime.now());
+        
+        movimentacaoRepository.save(movimentacao);
     }
 
     @Transactional
@@ -126,15 +167,39 @@ public class LoteService {
         Lote lote = loteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lote", "id", id));
 
-        Produto produto = produtoService.buscarEntidadePorId(dto.produtoId());
+        // Não permitir atualizar se houver movimentações
+        if (!movimentacaoRepository.findByLoteId(id).isEmpty()) {
+            throw new BusinessException("Não é possível atualizar lote com movimentações. Crie um novo lote.");
+        }
 
-        lote.setProduto(produto);
+        // Calcular nova quantidade total
+        int quantidadeTotal = dto.itens().stream()
+                .mapToInt(item -> item.quantidade())
+                .sum();
+
+        lote.setQuantidadeInicial(quantidadeTotal);
+        lote.setQuantidadeAtual(quantidadeTotal);
         lote.setDataEntrada(dto.dataEntrada());
         lote.setUnidadeMedida(dto.unidadeMedida());
-        lote.setDataValidade(dto.dataValidade());
-        lote.setTamanho(dto.tamanho());
-        lote.setVoltagem(dto.voltagem());
         lote.setObservacoes(dto.observacoes());
+
+        // Limpar itens antigos e adicionar novos
+        lote.getItens().clear();
+        
+        final Lote finalLote = lote;
+        dto.itens().forEach(itemDto -> {
+            Produto produto = produtoService.buscarEntidadePorId(itemDto.produtoId());
+            
+            com.ong.backend.models.LoteItem item = new com.ong.backend.models.LoteItem();
+            item.setLote(finalLote);
+            item.setProduto(produto);
+            item.setQuantidade(itemDto.quantidade());
+            item.setDataValidade(itemDto.dataValidade());
+            item.setTamanho(itemDto.tamanho());
+            item.setVoltagem(itemDto.voltagem());
+            
+            finalLote.getItens().add(item);
+        });
 
         lote = loteRepository.save(lote);
         return new LoteResponseDTO(lote);

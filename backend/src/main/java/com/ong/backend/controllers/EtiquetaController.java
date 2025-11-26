@@ -29,6 +29,7 @@ public class EtiquetaController {
             
             return new ResponseEntity<>(etiqueta, headers, HttpStatus.OK);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

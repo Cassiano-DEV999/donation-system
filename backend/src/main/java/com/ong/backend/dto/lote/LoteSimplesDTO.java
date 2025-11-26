@@ -3,20 +3,22 @@ package com.ong.backend.dto.lote;
 import com.ong.backend.models.Lote;
 
 import java.time.LocalDate;
+import java.util.stream.Collectors;
 
 public record LoteSimplesDTO(
     Long id,
-    String nomeProduto,
+    String descricaoProdutos,
     Integer quantidadeAtual,
-    LocalDate dataValidade,
     String codigoBarras
 ) {
     public LoteSimplesDTO(Lote lote) {
         this(
             lote.getId(),
-            lote.getProduto().getNome(),
+            lote.getItens().isEmpty() ? "Sem produtos" : 
+                lote.getItens().stream()
+                    .map(item -> item.getProduto().getNome() + " (" + item.getQuantidade() + ")")
+                    .collect(Collectors.joining(", ")),
             lote.getQuantidadeAtual(),
-            lote.getDataValidade(),
             lote.getCodigoBarras()
         );
     }

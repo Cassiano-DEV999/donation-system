@@ -2,17 +2,28 @@ import api from '@/lib/axios';
 
 export type UnidadeMedida = 'UNIDADE' | 'QUILOGRAMA' | 'LITRO' | 'PACOTE' | 'CAIXA';
 
-export interface Lote {
-  id: number;
+export interface LoteItem {
+  id?: number;
   produtoId: number;
   produtoNome?: string;
+  quantidade: number;
+  dataValidade?: string;
+  tamanho?: string;
+  voltagem?: string;
+}
+
+export interface Lote {
+  [x: string]: any;
+  dataValidade: any;
+  tamanho: any;
+  voltagem: any;
+  produtoNome: ReactNode;
+  id: number;
+  itens: LoteItem[];
   quantidadeInicial: number;
   quantidadeAtual: number;
   dataEntrada: string;
   unidadeMedida: UnidadeMedida;
-  dataValidade?: string;
-  tamanho?: string;
-  voltagem?: string;
   observacoes?: string;
   codigoBarras?: string;
 }
@@ -28,12 +39,12 @@ export const loteService = {
     return response.data;
   },
 
-  async create(data: Omit<Lote, 'id' | 'produtoNome' | 'codigoBarras' | 'quantidadeAtual'>): Promise<Lote> {
+  async create(data: Omit<Lote, 'id' | 'codigoBarras' | 'quantidadeInicial' | 'quantidadeAtual'>): Promise<Lote> {
     const response = await api.post('/api/lotes', data);
     return response.data;
   },
 
-  async update(id: number, data: Omit<Lote, 'id' | 'produtoNome' | 'codigoBarras'>): Promise<Lote> {
+  async update(id: number, data: Omit<Lote, 'id' | 'codigoBarras' | 'quantidadeInicial' | 'quantidadeAtual'>): Promise<Lote> {
     const response = await api.put(`/api/lotes/${id}`, data);
     return response.data;
   },

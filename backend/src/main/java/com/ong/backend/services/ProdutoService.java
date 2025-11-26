@@ -63,9 +63,12 @@ public class ProdutoService {
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto", "id", id));
 
-        Integer totalEmEstoque = loteRepository.findByProdutoId(id)
+        // Buscar total em estoque somando quantidades nos itens de lotes
+        Integer totalEmEstoque = loteRepository.findAll()
                 .stream()
-                .mapToInt(lote -> lote.getQuantidadeAtual())
+                .flatMap(lote -> lote.getItens().stream())
+                .filter(item -> item.getProduto().getId().equals(id))
+                .mapToInt(item -> item.getQuantidade())
                 .sum();
 
         return new ProdutoDetalhesDTO(produto, totalEmEstoque);

@@ -71,8 +71,10 @@ public class MovimentacaoController {
     }
 
     @PostMapping
-    public ResponseEntity<MovimentacaoResponseDTO> criar(@Valid @RequestBody MovimentacaoRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(movimentacaoService.criar(dto));
+    public ResponseEntity<MovimentacaoResponseDTO> criar(@Valid @RequestBody MovimentacaoRequestDTO dto, 
+                                                         @org.springframework.security.core.annotation.AuthenticationPrincipal 
+                                                         org.springframework.security.core.userdetails.UserDetails userDetails) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(movimentacaoService.criar(dto, userDetails.getUsername()));
     }
 
     @DeleteMapping("/{id}")

@@ -9,6 +9,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -61,8 +63,11 @@ public class LoteController {
     }
 
     @PostMapping
-    public ResponseEntity<LoteResponseDTO> criar(@Valid @RequestBody LoteRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(loteService.criar(dto));
+    public ResponseEntity<LoteResponseDTO> criar(
+            @Valid @RequestBody LoteRequestDTO dto,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(loteService.criar(dto, userDetails.getUsername()));
     }
 
     @PutMapping("/{id}")

@@ -3,7 +3,6 @@ package com.ong.backend.models;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.List;
 
 @Entity
 @Data
@@ -20,7 +19,6 @@ public class Categoria {
 
     private String descricao;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TipoCategoria tipo;
+    @Column(name = "icone")
+    private String icone; // Emoji ou nome de ícone para UI
 }

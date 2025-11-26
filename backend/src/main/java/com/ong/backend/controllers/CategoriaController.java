@@ -21,9 +21,8 @@ public class CategoriaController {
 
     @GetMapping
     public ResponseEntity<List<CategoriaResponseDTO>> listarTodas(
-            @RequestParam(required = false) String nome,
-            @RequestParam(required = false) String tipo) {
-        return ResponseEntity.ok(categoriaService.listarComFiltros(nome, tipo));
+            @RequestParam(required = false) String nome) {
+        return ResponseEntity.ok(categoriaService.listarComFiltros(nome, null));
     }
 
     @GetMapping("/simples")

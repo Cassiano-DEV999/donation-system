@@ -119,4 +119,10 @@ public class UsuarioService {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", id));
     }
+
+    @Transactional(readOnly = true)
+    public Usuario buscarEntidadePorEmail(String email) {
+        return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "email", email));
+    }
 }

@@ -7,12 +7,12 @@ import com.google.zxing.oned.EAN13Writer;
 import com.ong.backend.models.Lote;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 
 @Service
@@ -21,6 +21,7 @@ public class EtiquetaService {
 
     private final LoteService loteService;
 
+    @Transactional(readOnly = true)
     public byte[] gerarEtiqueta(Long loteId, String tamanho) throws Exception {
         Lote lote = loteService.buscarEntidadePorId(loteId);
         
@@ -78,40 +79,32 @@ public class EtiquetaService {
         int lineHeight = (int)(fontSize * 1.2);
         
         g2d.setFont(new Font("Arial", Font.BOLD, fontSize));
-        String nomeProduto = truncate(lote.getProduto().getNome(), 30);
-        int xNome = (largura - g2d.getFontMetrics().stringWidth(nomeProduto)) / 2;
-        g2d.drawString(nomeProduto, xNome, yPos);
+        String tituloLote = "LOTE #" + lote.getId();
+        int xTitulo = (largura - g2d.getFontMetrics().stringWidth(tituloLote)) / 2;
+        g2d.drawString(tituloLote, xTitulo, yPos);
         yPos += lineHeight;
         
         g2d.setFont(new Font("Arial", Font.PLAIN, (int)(fontSize * 0.67)));
-        String categoria = "Categoria: " + lote.getProduto().getCategoria().getNome();
-        g2d.drawString(categoria, margin, yPos);
-        yPos += lineHeight;
-        
-        String quantidade = "Quantidade: " + lote.getQuantidadeAtual() + " unidades";
+        String quantidade = "Quantidade Total: " + lote.getQuantidadeAtual() + " unidades";
         g2d.drawString(quantidade, margin, yPos);
         yPos += lineHeight;
         
-        if (lote.getDataValidade() != null) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            String validade = "Validade: " + lote.getDataValidade().format(formatter);
-            g2d.setColor(Color.RED);
-            g2d.setFont(new Font("Arial", Font.BOLD, (int)(fontSize * 0.67)));
-            g2d.drawString(validade, margin, yPos);
-            g2d.setColor(Color.BLACK);
-            yPos += lineHeight;
-        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String dataEntrada = "Entrada: " + lote.getDataEntrada().format(formatter);
+        g2d.drawString(dataEntrada, margin, yPos);
+        yPos += lineHeight + 10;
         
-        g2d.setFont(new Font("Arial", Font.PLAIN, (int)(fontSize * 0.56)));
+        g2d.setFont(new Font("Arial", Font.BOLD, (int)(fontSize * 0.6)));
+        g2d.drawString("Produtos:", margin, yPos);
+        yPos += (int)(lineHeight * 0.8);
         
-        if (lote.getTamanho() != null && !lote.getTamanho().isBlank()) {
-            g2d.drawString("Tamanho: " + lote.getTamanho(), margin, yPos);
-            yPos += (int)(lineHeight * 0.8);
-        }
-        
-        if (lote.getVoltagem() != null && !lote.getVoltagem().isBlank()) {
-            g2d.drawString("Voltagem: " + lote.getVoltagem(), margin, yPos);
-            yPos += (int)(lineHeight * 0.8);
+        g2d.setFont(new Font("Arial", Font.PLAIN, (int)(fontSize * 0.5)));
+        for (var item : lote.getItens()) {
+            String produtoInfo = "• " + truncate(item.getProduto().getNome(), 25) + " (" + item.getQuantidade() + ")";
+            g2d.drawString(produtoInfo, margin + 10, yPos);
+            yPos += (int)(lineHeight * 0.7);
+            
+            if (yPos > altura - barcodeHeight - 120) break;
         }
         
         String codigoBarras = lote.getCodigoBarras();
@@ -140,4 +133,6 @@ public class EtiquetaService {
         if (text == null) return "";
         return text.length() > maxLength ? text.substring(0, maxLength - 3) + "..." : text;
     }
+
+
 }

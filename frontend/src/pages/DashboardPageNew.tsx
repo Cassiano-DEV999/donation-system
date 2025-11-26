@@ -56,33 +56,36 @@ export default function DashboardPage() {
         estoqueTotal,
       })
 
-      const tipoCount: Record<string, number> = {}
-      categorias.forEach(cat => {
-        tipoCount[cat.tipo] = (tipoCount[cat.tipo] || 0) + 1
+      // Agrupar movimentações por dia e ordenar pelos dias com mais movimentações
+      const movPorDiaMap: Record<string, number> = {}
+
+      movimentacoes.forEach(mov => {
+        const dia = mov.dataHora.split('T')[0]
+        movPorDiaMap[dia] = (movPorDiaMap[dia] || 0) + 1
       })
 
-      const tipoLabels: Record<string, string> = {
-        ALIMENTO: 'Alimentos',
-        VESTUARIO: 'Vestuário',
-        ELETRONICO: 'Eletrônicos',
-        HIGIENE: 'Higiene',
-        OUTROS: 'Outros',
-      }
-
-      const tipoColors: Record<string, string> = {
-        ALIMENTO: 'hsl(var(--chart-1))',
-        VESTUARIO: 'hsl(var(--chart-2))',
-        ELETRONICO: 'hsl(var(--chart-3))',
-        HIGIENE: 'hsl(var(--chart-4))',
-        OUTROS: 'hsl(var(--chart-5))',
-      }
+      const chartColors = [
+        '#3b82f6', // Azul
+        '#10b981', // Verde
+        '#f59e0b', // Laranja
+        '#ef4444', // Vermelho
+        '#8b5cf6', // Roxo
+        '#06b6d4', // Ciano
+        '#ec4899', // Rosa
+        '#14b8a6', // Teal
+        '#f97316', // Laranja escuro
+        '#6366f1', // Índigo
+      ]
 
       setCategoriaData(
-        Object.entries(tipoCount).map(([tipo, count]) => ({
-          tipo: tipoLabels[tipo] || tipo,
-          quantidade: count,
-          fill: tipoColors[tipo],
-        }))
+        Object.entries(movPorDiaMap)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10)
+          .map(([dia, count], index) => ({
+            tipo: new Date(dia).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+            quantidade: count,
+            fill: chartColors[index % chartColors.length],
+          }))
       )
 
       const ultimos7Dias = Array.from({ length: 7 }, (_, i) => {
@@ -345,15 +348,15 @@ export default function DashboardPage() {
                   <CardHeader className="border-b">
                     <CardTitle className="text-lg flex items-center gap-2">
                       <div className="h-8 w-1 bg-linear-to-b from-blue-500 to-purple-500 rounded-full" />
-                      Categorias por Tipo
+                      Dias com Mais Movimentações
                     </CardTitle>
-                    <CardDescription>Distribuição das categorias cadastradas</CardDescription>
+                    <CardDescription>Top 10 dias com maior volume de movimentações</CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6">
                     <ChartContainer
                       config={{
                         quantidade: {
-                          label: "Quantidade",
+                          label: "Movimentações",
                           color: "hsl(var(--chart-1))",
                         },
                       }}
@@ -362,7 +365,7 @@ export default function DashboardPage() {
                       <BarChart data={categoriaData} layout="vertical">
                         <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
                         <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis dataKey="tipo" type="category" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} width={80} />
+                        <YAxis dataKey="tipo" type="category" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} width={100} />
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <Bar dataKey="quantidade" radius={[0, 8, 8, 0]}>
                           {categoriaData.map((entry, index) => (

@@ -152,9 +152,19 @@ export function MovimentacoesPage() {
       toast.success('Movimentação registrada com sucesso!');
       await loadData();
       handleCloseDialog();
-    } catch (error) {
-      console.error('Erro ao salvar movimentação:', error);
-      toast.error('Erro ao salvar movimentação');
+    } catch (error: any) {
+      console.error('Erro detalhado ao criar movimentação:', error);
+      console.error('Response:', error.response);
+      console.error('Status:', error.response?.status);
+      console.error('Data:', error.response?.data);
+
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        toast.error('Erro de autenticação. Faça login novamente.');
+        console.error('Token atual:', localStorage.getItem('token'));
+        console.error('Usuário atual:', user);
+      } else {
+        toast.error(error.response?.data?.message || 'Erro ao criar movimentação');
+      }
     } finally {
       setSaving(false);
     }
@@ -220,20 +230,32 @@ export function MovimentacoesPage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      movimentacoes.map((mov) => (
-                        <TableRow key={mov.id}>
-                          <TableCell>{formatDateTime(mov.dataHora)}</TableCell>
-                          <TableCell className="font-mono">#{mov.lote?.id || mov.loteId}</TableCell>
-                          <TableCell className="font-medium">{mov.lote?.produtoNome || '-'}</TableCell>
-                          <TableCell>
-                            <Badge variant={tipoColors[mov.tipo]}>
-                              {tipoLabels[mov.tipo]}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{mov.quantidade}</TableCell>
-                          <TableCell>{mov.usuario?.nome || 'Sistema'}</TableCell>
-                        </TableRow>
-                      ))
+                      movimentacoes.map((mov) => {
+                        const lote = mov.lote;
+                        const produtos = lote?.itens?.length > 0
+                          ? lote.itens.map(item => item.produtoNome).join(', ')
+                          : mov.loteProdutoNome || '-';
+
+                        return (
+                          <TableRow key={mov.id}>
+                            <TableCell>{formatDateTime(mov.dataHora)}</TableCell>
+                            <TableCell className="font-mono">#{mov.lote?.id || mov.loteId}</TableCell>
+                            <TableCell className="font-medium">
+                              {produtos}
+                              {lote?.itens && lote.itens.length > 1 && (
+                                <span className="text-xs text-muted-foreground ml-1">({lote.itens.length} produtos)</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={tipoColors[mov.tipo]}>
+                                {tipoLabels[mov.tipo]}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{mov.quantidade}</TableCell>
+                            <TableCell>{mov.usuario?.nome || 'Sistema'}</TableCell>
+                          </TableRow>
+                        );
+                      })
                     )}
                   </TableBody>
                 </Table>

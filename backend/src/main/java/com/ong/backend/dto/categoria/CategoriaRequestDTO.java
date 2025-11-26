@@ -1,8 +1,6 @@
 package com.ong.backend.dto.categoria;
 
-import com.ong.backend.models.TipoCategoria;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record CategoriaRequestDTO(
@@ -14,6 +12,6 @@ public record CategoriaRequestDTO(
     @Size(max = 255, message = "Descrição deve ter no máximo 255 caracteres")
     String descricao,
 
-    @NotNull(message = "Tipo é obrigatório")
-    TipoCategoria tipo
+    @Size(max = 50, message = "Ícone deve ter no máximo 50 caracteres")
+    String icone // Emoji ou nome de ícone para UI
 ) {}

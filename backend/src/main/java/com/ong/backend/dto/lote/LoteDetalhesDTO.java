@@ -1,19 +1,18 @@
 package com.ong.backend.dto.lote;
 
-import com.ong.backend.dto.produto.ProdutoResponseDTO;
 import com.ong.backend.models.Lote;
+import com.ong.backend.models.UnidadeMedida;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record LoteDetalhesDTO(
     Long id,
-    ProdutoResponseDTO produto,
+    List<LoteItemResponseDTO> itens,
     Integer quantidadeInicial,
     Integer quantidadeAtual,
     LocalDate dataEntrada,
-    LocalDate dataValidade,
-    String tamanho,
-    String voltagem,
+    UnidadeMedida unidadeMedida,
     String observacoes,
     String codigoBarras,
     Integer totalMovimentacoes
@@ -21,13 +20,11 @@ public record LoteDetalhesDTO(
     public LoteDetalhesDTO(Lote lote, Integer totalMovimentacoes) {
         this(
             lote.getId(),
-            new ProdutoResponseDTO(lote.getProduto()),
+            lote.getItens().stream().map(LoteItemResponseDTO::new).toList(),
             lote.getQuantidadeInicial(),
             lote.getQuantidadeAtual(),
             lote.getDataEntrada(),
-            lote.getDataValidade(),
-            lote.getTamanho(),
-            lote.getVoltagem(),
+            lote.getUnidadeMedida(),
             lote.getObservacoes(),
             lote.getCodigoBarras(),
             totalMovimentacoes

@@ -1,12 +1,10 @@
 import api from '@/lib/axios';
 
-export type TipoCategoria = 'ALIMENTO' | 'VESTUARIO' | 'ELETRONICO' | 'HIGIENE' | 'OUTROS';
-
 export interface Categoria {
   id: number;
   nome: string;
   descricao?: string;
-  tipo: TipoCategoria;
+  icone?: string;
 }
 
 export const categoriaService = {

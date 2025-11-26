@@ -144,7 +144,7 @@ export function EtiquetasPage() {
                           <SelectContent>
                             {lotes.map((lote) => (
                               <SelectItem key={lote.id} value={lote.id.toString()}>
-                                {lote.produtoNome} - {lote.codigoBarras || 'Sem código'}
+                                Lote #{lote.id} - {lote.itens?.length > 0 ? (lote.itens.length === 1 ? lote.itens[0].produtoNome : `${lote.itens.length} produtos`) : 'Sem produtos'} - {lote.codigoBarras || 'Sem código'}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -158,32 +158,36 @@ export function EtiquetasPage() {
                           <h3 className="mb-2 font-semibold">Informações do Lote</h3>
                           <div className="grid gap-1 text-sm">
                             <div>
-                              <span className="font-medium">Produto:</span> {selectedLote.produtoNome}
+                              <span className="font-medium">Lote:</span> #{selectedLote.id}
                             </div>
                             <div>
-                              <span className="font-medium">Código:</span>{' '}
+                              <span className="font-medium">Produtos:</span>{' '}
+                              {selectedLote.itens?.length > 0 ? (
+                                <div className="mt-1 space-y-1">
+                                  {selectedLote.itens.map((item, idx) => (
+                                    <div key={idx} className="text-xs">
+                                      • {item.produtoNome} ({item.quantidade} {selectedLote.unidadeMedida?.toLowerCase()})
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : 'Sem produtos'}
+                            </div>
+                            <div>
+                              <span className="font-medium">Código de Barras:</span>{' '}
                               {selectedLote.codigoBarras || '-'}
                             </div>
                             <div>
-                              <span className="font-medium">Quantidade:</span>{' '}
-                              {selectedLote.quantidadeAtual} unidades
+                              <span className="font-medium">Quantidade Total:</span>{' '}
+                              {selectedLote.quantidadeAtual} {selectedLote.unidadeMedida?.toLowerCase()}
                             </div>
-                            {selectedLote.dataValidade && (
+                            <div>
+                              <span className="font-medium">Data de Entrada:</span>{' '}
+                              {new Date(selectedLote.dataEntrada).toLocaleDateString('pt-BR')}
+                            </div>
+                            {selectedLote.observacoes && (
                               <div>
-                                <span className="font-medium">Validade:</span>{' '}
-                                {new Date(selectedLote.dataValidade).toLocaleDateString('pt-BR')}
-                              </div>
-                            )}
-                            {selectedLote.tamanho && (
-                              <div>
-                                <span className="font-medium">Tamanho:</span>{' '}
-                                {selectedLote.tamanho}
-                              </div>
-                            )}
-                            {selectedLote.voltagem && (
-                              <div>
-                                <span className="font-medium">Voltagem:</span>{' '}
-                                {selectedLote.voltagem}
+                                <span className="font-medium">Observações:</span>{' '}
+                                {selectedLote.observacoes}
                               </div>
                             )}
                           </div>

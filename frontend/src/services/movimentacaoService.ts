@@ -9,15 +9,19 @@ export interface Movimentacao {
   dataHora: string;
   lote?: {
     id: number;
-    produtoId: number;
-    produtoNome: string;
+    itens?: Array<{
+      id: number;
+      produtoId: number;
+      produtoNome: string;
+      quantidade: number;
+      dataValidade?: string;
+      tamanho?: string;
+      voltagem?: string;
+    }>;
     quantidadeInicial: number;
     quantidadeAtual: number;
     dataEntrada: string;
     unidadeMedida: string;
-    dataValidade?: string;
-    tamanho?: string;
-    voltagem?: string;
     observacoes?: string;
     codigoBarras?: string;
   };

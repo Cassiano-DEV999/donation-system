@@ -6,7 +6,6 @@ import com.ong.backend.dto.categoria.CategoriaSimplesDTO;
 import com.ong.backend.exceptions.BusinessException;
 import com.ong.backend.exceptions.ResourceNotFoundException;
 import com.ong.backend.models.Categoria;
-import com.ong.backend.models.TipoCategoria;
 import com.ong.backend.repositories.CategoriaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,7 +34,6 @@ public class CategoriaService {
         
         return categorias.stream()
                 .filter(c -> nome == null || nome.trim().isEmpty() || c.getNome().toLowerCase().contains(nome.trim().toLowerCase()))
-                .filter(c -> tipo == null || tipo.trim().isEmpty() || c.getTipo().name().equalsIgnoreCase(tipo.trim()))
                 .map(CategoriaResponseDTO::new)
                 .collect(Collectors.toList());
     }
@@ -64,7 +62,7 @@ public class CategoriaService {
         Categoria categoria = new Categoria();
         categoria.setNome(dto.nome());
         categoria.setDescricao(dto.descricao());
-        categoria.setTipo(dto.tipo());
+        categoria.setIcone(dto.icone());
 
         categoria = categoriaRepository.save(categoria);
         return new CategoriaResponseDTO(categoria);
@@ -81,7 +79,7 @@ public class CategoriaService {
 
         categoria.setNome(dto.nome());
         categoria.setDescricao(dto.descricao());
-        categoria.setTipo(dto.tipo());
+        categoria.setIcone(dto.icone());
 
         categoria = categoriaRepository.save(categoria);
         return new CategoriaResponseDTO(categoria);

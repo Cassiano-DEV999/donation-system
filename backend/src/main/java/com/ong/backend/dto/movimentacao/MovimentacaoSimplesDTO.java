@@ -16,7 +16,7 @@ public record MovimentacaoSimplesDTO(
     public MovimentacaoSimplesDTO(Movimentacao movimentacao) {
         this(
             movimentacao.getId(),
-            movimentacao.getLote().getProduto().getNome(),
+            "Lote #" + movimentacao.getLote().getId(),
             movimentacao.getUsuario().getNome(),
             movimentacao.getTipo(),
             movimentacao.getQuantidade(),

@@ -46,16 +46,17 @@ export function LotesPage() {
   const [filters, setFilters] = useState<{ produtoId: string; dataEntradaInicio: string; dataEntradaFim: string; comEstoque: string }>({ produtoId: '', dataEntradaInicio: '', dataEntradaFim: '', comEstoque: '' });
   const [activeFilters, setActiveFilters] = useState<{ produtoId: string; dataEntradaInicio: string; dataEntradaFim: string; comEstoque: string }>({ produtoId: '', dataEntradaInicio: '', dataEntradaFim: '', comEstoque: '' });
   const [formData, setFormData] = useState({
-    produtoId: '',
-    quantidadeInicial: '',
-    quantidadeAtual: '',
     dataEntrada: '',
     unidadeMedida: '' as UnidadeMedida | '',
-    dataValidade: '',
-    tamanho: '',
-    voltagem: '',
     observacoes: '',
   });
+  const [itens, setItens] = useState<Array<{
+    produtoId: string;
+    quantidade: string;
+    dataValidade: string;
+    tamanho: string;
+    voltagem: string;
+  }>>([{ produtoId: '', quantidade: '', dataValidade: '', tamanho: '', voltagem: '' }]);
   const [saving, setSaving] = useState(false);
 
   const loadData = async () => {
@@ -88,30 +89,26 @@ export function LotesPage() {
     if (lote) {
       setEditingLote(lote);
       setFormData({
-        produtoId: lote.produtoId.toString(),
-        quantidadeInicial: lote.quantidadeInicial.toString(),
-        quantidadeAtual: lote.quantidadeAtual.toString(),
         dataEntrada: lote.dataEntrada,
         unidadeMedida: lote.unidadeMedida || '',
-        dataValidade: lote.dataValidade || '',
-        tamanho: lote.tamanho || '',
-        voltagem: lote.voltagem || '',
         observacoes: lote.observacoes || '',
       });
+      setItens(lote.itens.map(item => ({
+        produtoId: item.produtoId.toString(),
+        quantidade: item.quantidade.toString(),
+        dataValidade: item.dataValidade || '',
+        tamanho: item.tamanho || '',
+        voltagem: item.voltagem || '',
+      })));
     } else {
       setEditingLote(null);
       const today = new Date().toISOString().split('T')[0];
       setFormData({
-        produtoId: '',
-        quantidadeInicial: '',
-        quantidadeAtual: '',
         dataEntrada: today,
         unidadeMedida: '',
-        dataValidade: '',
-        tamanho: '',
-        voltagem: '',
         observacoes: '',
       });
+      setItens([{ produtoId: '', quantidade: '', dataValidade: '', tamanho: '', voltagem: '' }]);
     }
     setDialogOpen(true);
   };
@@ -122,14 +119,20 @@ export function LotesPage() {
   };
 
   const handleSave = async () => {
-    if (!formData.produtoId) {
-      toast.error('Produto é obrigatório');
+    // Validação dos itens
+    const itensValidos = itens.filter(item => item.produtoId && item.quantidade);
+    if (itensValidos.length === 0) {
+      toast.error('Adicione pelo menos um produto');
       return;
     }
-    if (!formData.quantidadeInicial || parseInt(formData.quantidadeInicial) <= 0) {
-      toast.error('Quantidade inicial deve ser maior que zero');
-      return;
+
+    for (const item of itensValidos) {
+      if (parseInt(item.quantidade) <= 0) {
+        toast.error('Quantidade deve ser maior que zero');
+        return;
+      }
     }
+
     if (!formData.dataEntrada) {
       toast.error('Data de entrada é obrigatória');
       return;
@@ -142,18 +145,19 @@ export function LotesPage() {
     try {
       setSaving(true);
       const dataToSend: any = {
-        produtoId: parseInt(formData.produtoId),
-        quantidadeInicial: parseInt(formData.quantidadeInicial),
+        itens: itensValidos.map(item => ({
+          produtoId: parseInt(item.produtoId),
+          quantidade: parseInt(item.quantidade),
+          dataValidade: item.dataValidade || undefined,
+          tamanho: item.tamanho || undefined,
+          voltagem: item.voltagem || undefined,
+        })),
         dataEntrada: formData.dataEntrada,
         unidadeMedida: formData.unidadeMedida,
-        dataValidade: formData.dataValidade || undefined,
-        tamanho: formData.tamanho || undefined,
-        voltagem: formData.voltagem || undefined,
         observacoes: formData.observacoes || undefined,
       };
 
       if (editingLote) {
-        dataToSend.quantidadeAtual = parseInt(formData.quantidadeAtual);
         await loteService.update(editingLote.id, dataToSend);
         toast.success('Lote atualizado com sucesso!');
       } else {
@@ -191,6 +195,22 @@ export function LotesPage() {
   const handleOpenDeleteDialog = (id: number) => {
     setDeletingId(id);
     setDeleteDialogOpen(true);
+  };
+
+  const addItem = () => {
+    setItens([...itens, { produtoId: '', quantidade: '', dataValidade: '', tamanho: '', voltagem: '' }]);
+  };
+
+  const removeItem = (index: number) => {
+    if (itens.length > 1) {
+      setItens(itens.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateItem = (index: number, field: string, value: string) => {
+    const newItens = [...itens];
+    newItens[index] = { ...newItens[index], [field]: value };
+    setItens(newItens);
   };
 
   const formatDate = (date: string) => {
@@ -256,7 +276,17 @@ export function LotesPage() {
                       lotes.map((lote) => (
                         <TableRow key={lote.id}>
                           <TableCell className="font-mono">{lote.codigoBarras || '-'}</TableCell>
-                          <TableCell className="font-medium">{lote.produtoNome}</TableCell>
+                          <TableCell className="font-medium">
+                            {lote.itens.length === 1
+                              ? lote.itens[0].produtoNome
+                              : `${lote.itens.length} produtos`
+                            }
+                            {lote.itens.length > 1 && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {lote.itens.map(item => item.produtoNome).join(', ')}
+                              </div>
+                            )}
+                          </TableCell>
                           <TableCell>{lote.quantidadeInicial}</TableCell>
                           <TableCell>{lote.quantidadeAtual}</TableCell>
                           <TableCell>
@@ -270,7 +300,9 @@ export function LotesPage() {
                           </TableCell>
                           <TableCell>{formatDate(lote.dataEntrada)}</TableCell>
                           <TableCell>
-                            {lote.dataValidade ? formatDate(lote.dataValidade) : '-'}
+                            {lote.itens.some(item => item.dataValidade)
+                              ? lote.itens.map(item => item.dataValidade).filter(Boolean).map(d => formatDate(d!)).join(', ')
+                              : '-'}
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
@@ -278,6 +310,7 @@ export function LotesPage() {
                                 variant="outline"
                                 size="icon"
                                 onClick={() => handleOpenDialog(lote)}
+                                title="Editar"
                               >
                                 <IconEdit className="h-4 w-4" />
                               </Button>
@@ -285,6 +318,7 @@ export function LotesPage() {
                                 variant="outline"
                                 size="icon"
                                 onClick={() => handleOpenDeleteDialog(lote.id)}
+                                title="Excluir"
                               >
                                 <IconTrash className="h-4 w-4" />
                               </Button>
@@ -302,57 +336,31 @@ export function LotesPage() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingLote ? 'Editar Lote' : 'Novo Lote'}</DialogTitle>
-            <DialogDescription>Preencha os dados do lote</DialogDescription>
+            <DialogDescription>Preencha os dados do lote e adicione os produtos</DialogDescription>
           </DialogHeader>
+
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="produto">Produto *</Label>
-              <Select
-                value={formData.produtoId}
-                onValueChange={(value) => setFormData({ ...formData, produtoId: value })}
-                disabled={!!editingLote}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um produto" />
-                </SelectTrigger>
-                <SelectContent>
-                  {produtos.length === 0 ? (
-                    <div className="p-2 text-sm text-muted-foreground">
-                      Nenhum produto cadastrado
-                    </div>
-                  ) : (
-                    produtos.map((prod) => (
-                      <SelectItem key={prod.id} value={prod.id.toString()}>
-                        {prod.nome}{prod.categoriaNome ? ` (${prod.categoriaNome})` : ''}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Informações do Lote */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="quantidadeInicial">Quantidade Inicial *</Label>
+              <div className="space-y-2">
+                <Label htmlFor="dataEntrada">Data de Entrada *</Label>
                 <Input
-                  id="quantidadeInicial"
-                  type="number"
-                  value={formData.quantidadeInicial}
-                  onChange={(e) =>
-                    setFormData({ ...formData, quantidadeInicial: e.target.value })
-                  }
-                  disabled={!!editingLote}
+                  id="dataEntrada"
+                  type="date"
+                  value={formData.dataEntrada}
+                  onChange={(e) => setFormData({ ...formData, dataEntrada: e.target.value })}
                 />
               </div>
-              <div className="grid gap-2">
+              <div className="space-y-2">
                 <Label htmlFor="unidadeMedida">Unidade de Medida *</Label>
                 <Select
                   value={formData.unidadeMedida}
                   onValueChange={(value) => setFormData({ ...formData, unidadeMedida: value as UnidadeMedida })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="unidadeMedida">
                     <SelectValue placeholder="Selecione a unidade" />
                   </SelectTrigger>
                   <SelectContent>
@@ -365,74 +373,129 @@ export function LotesPage() {
                 </Select>
               </div>
             </div>
-            {editingLote && (
-              <div className="grid gap-2">
-                <Label htmlFor="quantidadeAtual">Quantidade Atual</Label>
-                <Input
-                  id="quantidadeAtual"
-                  type="number"
-                  value={formData.quantidadeAtual}
-                  onChange={(e) =>
-                    setFormData({ ...formData, quantidadeAtual: e.target.value })
-                  }
-                />
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="dataEntrada">Data de Entrada *</Label>
-                <Input
-                  id="dataEntrada"
-                  type="date"
-                  value={formData.dataEntrada}
-                  onChange={(e) => setFormData({ ...formData, dataEntrada: e.target.value })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="dataValidade">Data de Validade</Label>
-                <Input
-                  id="dataValidade"
-                  type="date"
-                  value={formData.dataValidade}
-                  onChange={(e) => setFormData({ ...formData, dataValidade: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="tamanho">Tamanho</Label>
-                <Input
-                  id="tamanho"
-                  value={formData.tamanho}
-                  onChange={(e) => setFormData({ ...formData, tamanho: e.target.value })}
-                  placeholder="Ex: M, G, GG"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="voltagem">Voltagem</Label>
-                <Input
-                  id="voltagem"
-                  value={formData.voltagem}
-                  onChange={(e) => setFormData({ ...formData, voltagem: e.target.value })}
-                  placeholder="Ex: 110V, 220V"
-                />
-              </div>
-            </div>
-            <div className="grid gap-2">
+
+            <div className="space-y-2">
               <Label htmlFor="observacoes">Observações</Label>
               <Textarea
                 id="observacoes"
                 value={formData.observacoes}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, observacoes: e.target.value })}
-                placeholder="Observações adicionais"
+                placeholder="Observações adicionais sobre o lote"
+                rows={2}
               />
             </div>
+
+            {/* Produtos */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Produtos do Lote *</Label>
+                {!editingLote && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addItem}
+                  >
+                    <IconPlus className="h-4 w-4 mr-2" />
+                    Adicionar Produto
+                  </Button>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                {itens.map((item, index) => (
+                  <div key={index} className="border rounded-lg p-4 space-y-3 bg-muted/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Produto {index + 1}</span>
+                      {itens.length > 1 && !editingLote && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeItem(index)}
+                        >
+                          <IconX className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Nome do Produto *</Label>
+                      <Select
+                        value={item.produtoId}
+                        onValueChange={(value) => updateItem(index, 'produtoId', value)}
+                        disabled={!!editingLote}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione um produto" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {produtos.length === 0 ? (
+                            <div className="p-2 text-sm text-muted-foreground">
+                              Nenhum produto cadastrado
+                            </div>
+                          ) : (
+                            produtos.map((prod) => (
+                              <SelectItem key={prod.id} value={prod.id.toString()}>
+                                {prod.nome}{prod.categoriaNome ? ` (${prod.categoriaNome})` : ''}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label>Quantidade *</Label>
+                        <Input
+                          type="number"
+                          value={item.quantidade}
+                          onChange={(e) => updateItem(index, 'quantidade', e.target.value)}
+                          disabled={!!editingLote}
+                          placeholder="0"
+                          min="1"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Data de Validade</Label>
+                        <Input
+                          type="date"
+                          value={item.dataValidade}
+                          onChange={(e) => updateItem(index, 'dataValidade', e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label>Tamanho</Label>
+                        <Input
+                          value={item.tamanho}
+                          onChange={(e) => updateItem(index, 'tamanho', e.target.value)}
+                          placeholder="Ex: M, G, GG"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Voltagem</Label>
+                        <Input
+                          value={item.voltagem}
+                          onChange={(e) => updateItem(index, 'voltagem', e.target.value)}
+                          placeholder="Ex: 110V, 220V"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
+
           <DialogFooter>
             <Button variant="outline" onClick={handleCloseDialog} disabled={saving}>
               Cancelar
             </Button>
-            <Button variant="outline" onClick={handleSave} disabled={saving}>
+            <Button onClick={handleSave} disabled={saving}>
               {saving ? 'Salvando...' : 'Salvar'}
             </Button>
           </DialogFooter>

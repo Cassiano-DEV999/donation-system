@@ -23,8 +23,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { categoriaService, type Categoria, type TipoCategoria } from '@/services/categoriaService';
+import { categoriaService, type Categoria } from '@/services/categoriaService';
 import { IconPlus, IconEdit, IconTrash, IconFilter, IconX } from '@tabler/icons-react';
 
 export function CategoriasPage() {
@@ -35,17 +34,16 @@ export function CategoriasPage() {
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [formData, setFormData] = useState<{ nome: string; descricao: string; tipo: TipoCategoria | '' }>({ nome: '', descricao: '', tipo: '' });
+  const [formData, setFormData] = useState<{ nome: string; descricao: string; icone: string }>({ nome: '', descricao: '', icone: '' });
   const [saving, setSaving] = useState(false);
-  const [filters, setFilters] = useState<{ nome: string; tipo: string }>({ nome: '', tipo: '' });
-  const [activeFilters, setActiveFilters] = useState<{ nome: string; tipo: string }>({ nome: '', tipo: '' });
+  const [filters, setFilters] = useState<{ nome: string }>({ nome: '' });
+  const [activeFilters, setActiveFilters] = useState<{ nome: string }>({ nome: '' });
 
   const loadCategorias = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
       if (activeFilters.nome) params.append('nome', activeFilters.nome);
-      if (activeFilters.tipo) params.append('tipo', activeFilters.tipo);
 
       const data = await categoriaService.getAll(params.toString() ? `?${params.toString()}` : '');
       setCategorias(data);
@@ -63,10 +61,10 @@ export function CategoriasPage() {
   const handleOpenDialog = (categoria?: Categoria) => {
     if (categoria) {
       setEditingCategoria(categoria);
-      setFormData({ nome: categoria.nome, descricao: categoria.descricao || '', tipo: categoria.tipo || '' });
+      setFormData({ nome: categoria.nome, descricao: categoria.descricao || '', icone: categoria.icone || '' });
     } else {
       setEditingCategoria(null);
-      setFormData({ nome: '', descricao: '', tipo: '' });
+      setFormData({ nome: '', descricao: '', icone: '' });
     }
     setDialogOpen(true);
   };
@@ -74,16 +72,12 @@ export function CategoriasPage() {
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setEditingCategoria(null);
-    setFormData({ nome: '', descricao: '', tipo: '' });
+    setFormData({ nome: '', descricao: '', icone: '' });
   };
 
   const handleSave = async () => {
     if (!formData.nome.trim()) {
       toast.error('Nome é obrigatório');
-      return;
-    }
-    if (!formData.tipo) {
-      toast.error('Tipo é obrigatório');
       return;
     }
 
@@ -92,7 +86,7 @@ export function CategoriasPage() {
       const dataToSend = {
         nome: formData.nome,
         descricao: formData.descricao,
-        tipo: formData.tipo as TipoCategoria
+        icone: formData.icone
       };
       if (editingCategoria) {
         await categoriaService.update(editingCategoria.id, dataToSend);
@@ -152,9 +146,9 @@ export function CategoriasPage() {
                   onClick={() => setFilterDialogOpen(true)}>
                   <IconFilter className="mr-2 h-4 w-4" />
                   Filtrar
-                  {(activeFilters.nome || activeFilters.tipo) && (
+                  {activeFilters.nome && (
                     <span className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                      {[activeFilters.nome, activeFilters.tipo].filter(Boolean).length}
+                      1
                     </span>
                   )}
                 </Button>
@@ -174,8 +168,8 @@ export function CategoriasPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[60px]">Ícone</TableHead>
                       <TableHead>Nome</TableHead>
-                      <TableHead>Tipo</TableHead>
                       <TableHead>Descrição</TableHead>
                       <TableHead className="w-[100px]">Ações</TableHead>
                     </TableRow>
@@ -183,23 +177,17 @@ export function CategoriasPage() {
                   <TableBody>
                     {categorias.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={3} className="text-center">
+                        <TableCell colSpan={4} className="text-center">
                           Nenhuma categoria encontrada
                         </TableCell>
                       </TableRow>
                     ) : (
                       categorias.map((categoria) => (
                         <TableRow key={categoria.id}>
-                          <TableCell className="font-medium">{categoria.nome}</TableCell>
-                          <TableCell>
-                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary">
-                              {categoria.tipo === 'ALIMENTO' && 'Alimento'}
-                              {categoria.tipo === 'VESTUARIO' && 'Vestuário'}
-                              {categoria.tipo === 'ELETRONICO' && 'Eletrônico'}
-                              {categoria.tipo === 'HIGIENE' && 'Higiene'}
-                              {categoria.tipo === 'OUTROS' && 'Outros'}
-                            </span>
+                          <TableCell className="text-center text-2xl">
+                            {categoria.icone || '📦'}
                           </TableCell>
+                          <TableCell className="font-medium">{categoria.nome}</TableCell>
                           <TableCell>{categoria.descricao || '-'}</TableCell>
                           <TableCell>
                             <div className="flex gap-2">
@@ -247,26 +235,18 @@ export function CategoriasPage() {
                 id="nome"
                 value={formData.nome}
                 onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                placeholder="Ex: Alimentos"
+                placeholder="Ex: Roupas Infantil, Material Escolar"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="tipo">Tipo *</Label>
-              <Select
-                value={formData.tipo}
-                onValueChange={(value) => setFormData({ ...formData, tipo: value as TipoCategoria })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALIMENTO">Alimento</SelectItem>
-                  <SelectItem value="VESTUARIO">Vestuário</SelectItem>
-                  <SelectItem value="ELETRONICO">Eletrônico</SelectItem>
-                  <SelectItem value="HIGIENE">Higiene</SelectItem>
-                  <SelectItem value="OUTROS">Outros</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="icone">Ícone (Emoji)</Label>
+              <Input
+                id="icone"
+                value={formData.icone}
+                onChange={(e) => setFormData({ ...formData, icone: e.target.value })}
+                placeholder="Ex: 👔 🧸 📚 🍚"
+                maxLength={10}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="descricao">Descrição</Label>
@@ -330,29 +310,13 @@ export function CategoriasPage() {
                 placeholder="Digite o nome da categoria"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="filter-tipo">Tipo</Label>
-              <Select value={filters.tipo} onValueChange={(value) => setFilters({ ...filters, tipo: value === 'TODOS' ? '' : value })}>
-                <SelectTrigger id="filter-tipo">
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="TODOS">Todos</SelectItem>
-                  <SelectItem value="ALIMENTO">Alimento</SelectItem>
-                  <SelectItem value="VESTUARIO">Vestuário</SelectItem>
-                  <SelectItem value="ELETRONICO">Eletrônico</SelectItem>
-                  <SelectItem value="HIGIENE">Higiene</SelectItem>
-                  <SelectItem value="OUTROS">Outros</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => {
-                setFilters({ nome: '', tipo: '' });
-                setActiveFilters({ nome: '', tipo: '' });
+                setFilters({ nome: '' });
+                setActiveFilters({ nome: '' });
                 setFilterDialogOpen(false);
               }}
             >

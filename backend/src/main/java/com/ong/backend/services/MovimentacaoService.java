@@ -107,9 +107,16 @@ public class MovimentacaoService {
     }
 
     @Transactional
-    public MovimentacaoResponseDTO criar(MovimentacaoRequestDTO dto) {
+    public MovimentacaoResponseDTO criar(MovimentacaoRequestDTO dto, String emailUsuarioAutenticado) {
         Lote lote = loteService.buscarEntidadePorId(dto.loteId());
-        Usuario usuario = usuarioService.buscarEntidadePorId(dto.usuarioId());
+        
+        // Se usuarioId não for fornecido, usa o usuário autenticado
+        Usuario usuario;
+        if (dto.usuarioId() != null) {
+            usuario = usuarioService.buscarEntidadePorId(dto.usuarioId());
+        } else {
+            usuario = usuarioService.buscarEntidadePorEmail(emailUsuarioAutenticado);
+        }
 
         int delta = calcularDelta(dto.tipo(), dto.quantidade());
 
