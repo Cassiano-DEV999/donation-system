@@ -1,17 +1,18 @@
-import * as React from "react"
+import * as React from "react";
 import {
   IconBox,
   IconCategory,
   IconDashboard,
   IconExchange,
+  IconGift,
   IconPackage,
   IconPrinter,
   IconUsers,
-} from "@tabler/icons-react"
+} from "@tabler/icons-react";
 
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
-import { useAuth } from "@/contexts/AuthContext"
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
+import { useAuth } from "@/features/auth";
 import {
   Sidebar,
   SidebarContent,
@@ -20,10 +21,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useAuth()
+  const { user } = useAuth();
 
   const navMain = [
     {
@@ -52,18 +53,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: IconExchange,
     },
     {
+      title: "Doações",
+      url: "/doacoes",
+      icon: IconGift,
+    },
+    {
       title: "Etiquetas",
       url: "/etiquetas",
       icon: IconPrinter,
     },
-  ]
+  ];
 
   if (user?.perfil === "ADMIN") {
     navMain.push({
       title: "Usuários",
       url: "/usuarios",
       icon: IconUsers,
-    })
+    });
   }
 
   return (
@@ -77,7 +83,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="#">
                 <IconBox className="size-5!" />
-                <span className="text-base font-semibold">Sistema de Doações</span>
+                <span className="text-base font-semibold">
+                  Sistema de Doações
+                </span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -90,5 +98,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

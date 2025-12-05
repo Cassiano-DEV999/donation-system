@@ -1,5 +1,5 @@
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/features/auth";
 
 export function AdminRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -16,7 +16,7 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" />;
   }
 
-  if (user.perfil !== 'ADMIN') {
+  if (user.perfil !== "ADMIN") {
     return <Navigate to="/dashboard" />;
   }
 

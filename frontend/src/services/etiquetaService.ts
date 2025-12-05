@@ -1,4 +1,4 @@
-import api from '@/lib/axios';
+import { apiClient as api } from "@/shared/api/client";
 
 export interface EtiquetaLote {
   loteId: number;
@@ -17,23 +17,28 @@ export interface EtiquetaLote {
 }
 
 export const etiquetaService = {
-  async baixarEtiquetaLotePNG(loteId: number, tamanho: 'PEQUENO' | 'MEDIO' | 'GRANDE' = 'MEDIO'): Promise<Blob> {
+  async baixarEtiquetaLotePNG(
+    loteId: number,
+    tamanho: "PEQUENO" | "MEDIO" | "GRANDE" = "MEDIO"
+  ): Promise<Blob> {
     const response = await api.get(`/api/etiquetas/lote/${loteId}`, {
       params: { tamanho },
-      responseType: 'blob',
+      responseType: "blob",
     });
     return response.data;
   },
 
   async imprimirLotePDF(loteIds: number[]): Promise<void> {
-    const response = await api.post('/api/etiquetas/imprimir-lote', loteIds, {
-      responseType: 'blob',
+    const response = await api.post("/api/etiquetas/imprimir-lote", loteIds, {
+      responseType: "blob",
     });
-    
-    const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-    const link = document.createElement('a');
+
+    const url = window.URL.createObjectURL(
+      new Blob([response.data], { type: "application/pdf" })
+    );
+    const link = document.createElement("a");
     link.href = url;
-    link.setAttribute('download', `etiquetas-lote-${new Date().getTime()}.pdf`);
+    link.setAttribute("download", `etiquetas-lote-${new Date().getTime()}.pdf`);
     document.body.appendChild(link);
     link.click();
     link.remove();

@@ -64,19 +64,21 @@ public class EtiquetaService {
         PdfPCell cell = new PdfPCell();
         cell.setBorder(Rectangle.BOX);
         cell.setBorderWidth(1f);
-        cell.setPadding(10f);
-        cell.setFixedHeight(140f);
+        cell.setPadding(8f);
+        cell.setFixedHeight(100f);
 
-        Font fontTitulo = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+        Font fontTitulo = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
         Paragraph pTitulo = new Paragraph("LOTE #" + lote.getId(), fontTitulo);
         pTitulo.setAlignment(Element.ALIGN_CENTER);
         cell.addElement(pTitulo);
 
-        Font fontInfo = FontFactory.getFont(FontFactory.HELVETICA, 8);
+        Font fontInfo = FontFactory.getFont(FontFactory.HELVETICA, 7);
         String resumoProdutos = lote.getItens().isEmpty() ? "Vazio" : lote.getItens().get(0).getProduto().getNome();
 
-        if (lote.getItens().size() > 1) {
-            resumoProdutos += " + " + (lote.getItens().size() - 1) + " outros";
+        if (resumoProdutos.length() > 25) {
+            resumoProdutos = resumoProdutos.substring(0, 25) + "...";
+        } else if (lote.getItens().size() > 1) {
+            resumoProdutos += " +" + (lote.getItens().size() - 1);
         }
 
         Paragraph pInfo = new Paragraph(resumoProdutos, fontInfo);
@@ -90,23 +92,18 @@ public class EtiquetaService {
         String conteudoBarcode = "L-" + lote.getId();
         Image barcodeImage = gerarImagemBarcode(conteudoBarcode);
 
-        barcodeImage.scalePercent(80);
+        barcodeImage.scalePercent(65);
         barcodeImage.setAlignment(Element.ALIGN_CENTER);
-        barcodeImage.setSpacingBefore(5f);
+        barcodeImage.setSpacingBefore(3f);
 
         cell.addElement(barcodeImage);
-
-        Font fontCode = FontFactory.getFont(FontFactory.COURIER, 8);
-        Paragraph pCode = new Paragraph(conteudoBarcode, fontCode);
-        pCode.setAlignment(Element.ALIGN_CENTER);
-        cell.addElement(pCode);
 
         return cell;
     }
 
     private Image gerarImagemBarcode(String texto) throws Exception {
         Code128Writer writer = new Code128Writer();
-        BitMatrix matrix = writer.encode(texto, BarcodeFormat.CODE_128, 200, 50);
+        BitMatrix matrix = writer.encode(texto, BarcodeFormat.CODE_128, 180, 40);
 
         BufferedImage bufferedImage = MatrixToImageWriter.toBufferedImage(matrix);
 

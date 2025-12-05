@@ -1,64 +1,63 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react"
-import { useNavigate, Link } from "react-router-dom"
-import { toast } from "sonner"
-import { useAuth } from "@/contexts/AuthContext"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { toast } from "sonner";
+import { useAuth } from "@/features/auth";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const [nome, setNome] = useState("")
-  const [email, setEmail] = useState("")
-  const [senha, setSenha] = useState("")
-  const [confirmSenha, setConfirmSenha] = useState("")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const { register } = useAuth()
-  const navigate = useNavigate()
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [confirmSenha, setConfirmSenha] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
 
     if (senha !== confirmSenha) {
-      const errorMsg = "As senhas não coincidem"
-      setError(errorMsg)
-      toast.error(errorMsg)
-      return
+      const errorMsg = "As senhas não coincidem";
+      setError(errorMsg);
+      toast.error(errorMsg);
+      return;
     }
 
     if (senha.length < 6) {
-      const errorMsg = "A senha deve ter no mínimo 6 caracteres"
-      setError(errorMsg)
-      toast.error(errorMsg)
-      return
+      const errorMsg = "A senha deve ter no mínimo 6 caracteres";
+      setError(errorMsg);
+      toast.error(errorMsg);
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
-      await register(nome, email, senha, "VOLUNTARIO")
-      toast.success("Conta criada com sucesso!")
-      navigate("/dashboard")
+      await register(nome, email, senha, "VOLUNTARIO");
+      navigate("/dashboard");
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || "Erro ao criar conta. Tente novamente."
-      setError(errorMsg)
-      toast.error(errorMsg)
+      const errorMsg =
+        err.response?.data?.message || "Erro ao criar conta. Tente novamente.";
+      setError(errorMsg);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -69,12 +68,24 @@ export function SignupForm({
               <div className="flex flex-col items-center gap-2 text-center">
                 <div className="mb-2">
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30">
-                    <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <svg
+                      className="w-6 h-6 text-blue-600 dark:text-blue-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
                     </svg>
                   </div>
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight">Junte-se a nós</h1>
+                <h1 className="text-3xl font-bold tracking-tight">
+                  Junte-se a nós
+                </h1>
                 <p className="text-muted-foreground text-balance">
                   Crie sua conta e comece a fazer a diferença
                 </p>
@@ -135,17 +146,22 @@ export function SignupForm({
                     />
                   </Field>
                 </Field>
-                <FieldDescription>
-                  Mínimo de 6 caracteres
-                </FieldDescription>
+                <FieldDescription>Mínimo de 6 caracteres</FieldDescription>
               </Field>
               <Field>
-                <Button type="submit" disabled={isLoading} className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700">
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+                >
                   {isLoading ? "Criando conta..." : "Criar conta"}
                 </Button>
               </Field>
               <FieldDescription className="text-center">
-                Já tem uma conta? <Link to="/login" className="underline">Entrar</Link>
+                Já tem uma conta?{" "}
+                <Link to="/login" className="underline">
+                  Entrar
+                </Link>
               </FieldDescription>
             </FieldGroup>
           </form>
@@ -162,5 +178,5 @@ export function SignupForm({
         Ao criar uma conta, você concorda com nossos termos de uso
       </p>
     </div>
-  )
+  );
 }

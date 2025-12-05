@@ -16,12 +16,11 @@ public class ComposicaoProduto {
 
     @ManyToOne
     @JoinColumn(name = "produto_pai_id", nullable = false)
-    private Produto produtoPai; // O Kit (ex: Cesta Básica)
+    private Produto produtoPai;
 
     @ManyToOne
     @JoinColumn(name = "produto_componente_id", nullable = false)
-    private Produto componente; // O Item individual (ex: Arroz)
-
+    private Produto componente;
     @Column(nullable = false)
-    private Integer quantidade; // Quantidade deste item necessária para montar 1 kit
+    private Integer quantidade;
 }

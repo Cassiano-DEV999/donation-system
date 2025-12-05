@@ -5,7 +5,7 @@ import com.ong.backend.models.Lote;
 import com.ong.backend.models.Usuario;
 import com.ong.backend.models.TipoMovimentacao;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor; // Importar
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor; 
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
