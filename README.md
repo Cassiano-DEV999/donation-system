@@ -73,17 +73,49 @@ Feito para simplificar a operação diária de ONGs e garantir organização, ag
 
 ### 2) Configuração do .env (IMPORTANTE)
 
-No backend:
+#### Backend
 
 ```bash
 cd backend
 cp .env.example .env
 ```
 
-Configure:
+**Variáveis OBRIGATÓRIAS** (preencha antes de rodar):
 
-- `JWT_SECRET`
-- Credenciais do banco (caso altere)
+- `JWT_SECRET` - Chave secreta para assinar tokens JWT (mínimo 256 bits recomendado)
+- `JWT_EXPIRATION` - Tempo de expiração do token em milissegundos (ex: `86400000` = 1 dia)
+
+**Variáveis Opcionais** (têm valores padrão):
+
+- `SPRING_DATASOURCE_URL` - URL do banco (padrão: `jdbc:postgresql://db:5432/ong_db`)
+- `SPRING_DATASOURCE_USERNAME` - Usuário do banco (padrão: `admin`)
+- `SPRING_DATASOURCE_PASSWORD` - Senha do banco (padrão: `admin`)
+- `JWT_ACCESS_TOKEN_EXPIRATION` - Expiração do access token (padrão: `1800000` = 30 min)
+- `JWT_REFRESH_TOKEN_EXPIRATION` - Expiração do refresh token (padrão: `604800000` = 7 dias)
+- `SERVER_PORT` - Porta do servidor (padrão: `8080`)
+
+**Exemplo de `.env`:**
+
+```env
+JWT_SECRET=sua-chave-secreta-minima-256-bits-para-hmac-sha256
+JWT_EXPIRATION=86400000
+```
+
+#### Frontend (Opcional)
+
+O frontend funciona sem arquivo `.env`, mas você pode criar um para customizar a URL da API:
+
+```bash
+cd frontend
+```
+
+Crie um arquivo `.env` (opcional):
+
+```env
+VITE_API_URL=http://localhost:8080
+```
+
+**Nota**: Se não definir `VITE_API_URL`, o padrão será `http://localhost:8080`.
 
 ### 3) Rodando com Docker (recomendado)
 

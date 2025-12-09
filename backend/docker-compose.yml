@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: ong_db
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data # Recomendado usar volume nomeado
     networks:
       - ong-network
     healthcheck:
@@ -34,6 +34,25 @@ services:
       - ong-network
     restart: unless-stopped
 
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        # Aponta para o backend (acessível via browser do usuário, então localhost é ok para dev local)
+        - VITE_API_URL=http://localhost:8080
+    container_name: ong-frontend
+    ports:
+      - "5173:80" # Mapeia a porta 5173 (host) para 80 (container nginx)
+    depends_on:
+      - backend
+    networks:
+      - ong-network
+    restart: unless-stopped
+
 networks:
   ong-network:
     driver: bridge
+
+volumes:
+  postgres_data:

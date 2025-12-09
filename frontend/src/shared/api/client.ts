@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosError } from "axios";
 import type { ApiError } from "@/shared/types";
 import { tokenManager } from "./tokenManager";

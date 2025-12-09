@@ -16,16 +16,16 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret:minha-chave-secreta-super-segura-para-jwt-token-donation-system-2024}")
+    @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration:86400000}")
+    @Value("${jwt.expiration}")
     private Long expiration;
 
-    @Value("${jwt.access-token-expiration:1800000}")
+    @Value("${jwt.access-token-expiration}")
     private Long accessTokenExpiration;
 
-    @Value("${jwt.refresh-token-expiration:604800000}")
+    @Value("${jwt.refresh-token-expiration}")
     private Long refreshTokenExpiration;
 
     private Key getSigningKey() {
