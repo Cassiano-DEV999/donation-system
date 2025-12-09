@@ -119,21 +119,42 @@ VITE_API_URL=http://localhost:8080
 
 ### 3) Rodando com Docker (recomendado)
 
-#### Backend
+O projeto possui um `docker-compose.yml` que sobe **tudo de uma vez** (banco, backend e frontend).
+
+#### Opção A: Rodar tudo junto (Recomendado)
 
 ```bash
 cd backend
 docker compose up --build -d
 ```
 
-Backend disponível em: **http://localhost:8080**
+Isso irá subir:
+
+- **PostgreSQL** na porta `5432`
+- **Backend** na porta `8080`
+- **Frontend** na porta `5173`
+
+Acesse:
+
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:8080
+- **Swagger**: http://localhost:8080/swagger-ui/index.html
 
 **Usuários padrão:**
 
 - `admin@ong.com` / `admin123`
 - `admin2@ong.com` / `admin123`
 
-#### Frontend
+#### Opção B: Rodar apenas Backend com Docker
+
+Se quiser rodar apenas o backend e banco com Docker, mas o frontend localmente:
+
+```bash
+cd backend
+docker compose up db backend --build -d
+```
+
+Depois, em outro terminal:
 
 ```bash
 cd frontend
@@ -141,17 +162,54 @@ npm install
 npm run dev
 ```
 
-Frontend: **http://localhost:5173**
-
 ### 4) Rodando sem Docker
+
+#### Pré-requisitos adicionais:
+
+- PostgreSQL instalado e rodando localmente
+- Criar o banco de dados: `ong_db`
+
+Para criar o banco de dados:
+
+```bash
+# Conecte-se ao PostgreSQL
+psql -U postgres
+
+# Crie o banco de dados
+CREATE DATABASE ong_db;
+
+# Crie um usuário (opcional, ou use o padrão 'postgres')
+CREATE USER admin WITH PASSWORD 'admin';
+GRANT ALL PRIVILEGES ON DATABASE ong_db TO admin;
+
+# Saia do psql
+\q
+```
 
 #### Backend
 
 ```bash
 cd backend
 cp .env.example .env
+```
+
+**IMPORTANTE**: No arquivo `.env`, configure a URL do banco para usar `localhost`:
+
+```env
+JWT_SECRET=sua-chave-secreta-minima-256-bits-para-hmac-sha256
+JWT_EXPIRATION=86400000
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/ong_db
+SPRING_DATASOURCE_USERNAME=admin
+SPRING_DATASOURCE_PASSWORD=admin
+```
+
+Depois:
+
+```bash
 ./mvnw spring-boot:run
 ```
+
+Backend disponível em: **http://localhost:8080**
 
 #### Frontend
 
@@ -160,6 +218,32 @@ cd frontend
 npm install
 npm run dev
 ```
+
+Frontend disponível em: **http://localhost:5173**
+
+**Nota**: Certifique-se de que o PostgreSQL está rodando e o banco `ong_db` existe antes de iniciar o backend.
+
+#### Comandos úteis do Docker
+
+```bash
+# Ver logs dos containers
+cd backend
+docker compose logs -f
+
+# Parar todos os containers
+docker compose down
+
+# Parar e remover volumes (limpa o banco de dados)
+docker compose down -v
+
+# Rebuildar apenas um serviço
+docker compose up --build backend -d
+
+# Ver status dos containers
+docker compose ps
+```
+
+**Nota importante**: Na primeira execução, o `DataInitializer` pode levar alguns segundos para popular o banco de dados com dados de teste. Aguarde até ver a mensagem `✅ Inicialização completa!` nos logs antes de acessar o sistema.
 
 ## 📚 Documentação da API
 
@@ -263,7 +347,7 @@ frontend/
 
 ## 🐛 Reporte Problemas
 
-Abra uma [issue](https://github.com/Cassiano-DEV999/donation-system/issues) com:
+Abra uma [issue](https://github.com/CassianoProenca/donation-system/issues) com:
 
 - Descrição clara
 - Como reproduzir
@@ -276,9 +360,9 @@ MIT — veja o arquivo `LICENSE`.
 
 ## 👨‍💻 Autor
 
-**Cassiano Melo**
+**Cassiano Proença**
 
-- GitHub: [Cassiano-DEV999](https://github.com/Cassiano-DEV999)
+- GitHub: [CassianoProenca](https://github.com/CassianoProenca)
 - Email: cassianomeloprofissional@gmail.com
 
 ---
