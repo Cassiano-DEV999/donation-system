@@ -61,7 +61,7 @@ export function MovimentacaoTable({
   }
 
   if (movimentacoes.length === 0) {
-    return <EmptyState message="Nenhuma movimentação encontrada" />;
+    return <EmptyState title="Nenhuma movimentação encontrada" />;
   }
 
   return (

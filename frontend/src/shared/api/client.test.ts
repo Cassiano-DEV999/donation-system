@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import axios from "axios";
 
@@ -58,8 +59,8 @@ describe("API Client", () => {
     mockTokenManager.getToken.mockReturnValue("test-token");
 
     // Captura a função do interceptor
-    let requestInterceptor: ((config: any) => any) | null = null;
-    mockAxiosInstance.interceptors.request.use.mockImplementation((fn: any) => {
+    let requestInterceptor: ((config: { headers?: Record<string, string> }) => { headers?: Record<string, string> }) | null = null;
+    (mockAxiosInstance.interceptors.request.use as any).mockImplementation((fn: (config: { headers?: Record<string, string> }) => { headers?: Record<string, string> }) => {
       requestInterceptor = fn;
       return 0; // Retorna um ID de interceptor
     });
@@ -68,9 +69,9 @@ describe("API Client", () => {
     await import("./client");
 
     // Simula uma requisição
-    const config = { headers: {} };
+    const config: { headers?: Record<string, string> } = { headers: {} };
     if (requestInterceptor) {
-      const result = requestInterceptor(config);
+      const result = (requestInterceptor as (config: { headers?: Record<string, string> }) => { headers?: Record<string, string> })(config);
       expect(result).toBeDefined();
     }
 

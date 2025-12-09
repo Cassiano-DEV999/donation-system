@@ -3,7 +3,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./useAuth";
 import { useAuth } from "./useAuthHook";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 // Mock do tokenManager - deve ser definido dentro da factory
 vi.mock("@/shared/api/tokenManager", () => {

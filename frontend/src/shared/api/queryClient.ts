@@ -18,7 +18,7 @@ export const queryClient = new QueryClient({
       retry: 1,
 
       // Mantém dados anteriores durante refetch
-      placeholderData: (prev) => prev,
+      placeholderData: (prev: unknown) => prev,
     },
     mutations: {
       // Configurações para mutations (create, update, delete)

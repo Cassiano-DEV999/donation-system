@@ -45,4 +45,5 @@ export interface ProdutoFilters {
   nome?: string;
   categoriaId?: number;
   isKit?: string;
+  [key: string]: unknown;
 }

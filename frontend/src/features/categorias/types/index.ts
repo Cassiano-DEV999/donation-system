@@ -15,4 +15,5 @@ export interface CategoriaFormData {
 
 export interface CategoriaFilters {
   nome?: string;
+  [key: string]: unknown;
 }

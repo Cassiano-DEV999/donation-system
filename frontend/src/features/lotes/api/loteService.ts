@@ -19,8 +19,8 @@ export const loteService = {
       params.append("comEstoque", filters.comEstoque.toString());
     if (filters.busca) params.append("busca", filters.busca);
 
-    params.append("page", pagination.page.toString());
-    params.append("size", pagination.size.toString());
+    params.append("page", (pagination.page ?? 0).toString());
+    params.append("size", (pagination.size ?? 10).toString());
 
     const response = await apiClient.get<Page<LoteResponse>>(
       `/api/lotes?${params.toString()}`

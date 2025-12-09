@@ -47,7 +47,7 @@ export function UsuarioTable({
   }
 
   if (usuarios.length === 0) {
-    return <EmptyState message="Nenhum usuário encontrado" />;
+    return <EmptyState title="Nenhum usuário encontrado" />;
   }
 
   return (

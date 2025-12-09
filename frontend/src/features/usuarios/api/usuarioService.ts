@@ -12,8 +12,8 @@ export const usuarioService = {
     if (filters.nome) params.append("nome", filters.nome);
     if (filters.perfil) params.append("perfil", filters.perfil);
 
-    params.append("page", pagination.page.toString());
-    params.append("size", pagination.size.toString());
+    params.append("page", (pagination.page ?? 0).toString());
+    params.append("size", (pagination.size ?? 10).toString());
 
     const response = await apiClient.get<Page<UsuarioResponse>>(
       `/api/usuarios?${params.toString()}`

@@ -37,7 +37,7 @@ export function LoteTable({
   }
 
   if (lotes.length === 0) {
-    return <EmptyState message="Nenhum lote encontrado" />;
+    return <EmptyState title="Nenhum lote encontrado" />;
   }
 
   const getEstoqueColor = (

@@ -28,7 +28,8 @@ interface MontagemKitDialogProps {
 export function MontagemKitDialog({ isOpen, onClose }: MontagemKitDialogProps) {
   const { data: produtosData } = useProdutos(
     { isKit: "true" },
-    { page: 0, size: 1000 }
+    0,
+    1000
   );
   const montarKitMutation = useMontarKit();
 

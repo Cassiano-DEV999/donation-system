@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { toast } from "sonner";
 import type { User } from "../types";
 import { useLoginMutation, useRegisterMutation, useLogoutMutation, useRefreshTokenMutation } from "../api";

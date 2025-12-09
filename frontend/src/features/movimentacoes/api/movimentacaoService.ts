@@ -21,8 +21,8 @@ export const movimentacaoService = {
     if (filters.dataInicio) params.append("dataInicio", filters.dataInicio);
     if (filters.dataFim) params.append("dataFim", filters.dataFim);
 
-    params.append("page", pagination.page.toString());
-    params.append("size", pagination.size.toString());
+    params.append("page", (pagination.page ?? 0).toString());
+    params.append("size", (pagination.size ?? 10).toString());
 
     const response = await apiClient.get<Page<MovimentacaoResponse>>(
       `/api/movimentacoes?${params.toString()}`
