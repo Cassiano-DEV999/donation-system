@@ -1,5 +1,7 @@
 # 🔐 Security Policy
 
+🌎 Languages: [English](SECURITY.md) | [Português (Brasil)](SECURITY.pt-BR.md)
+
 ## Reporting Security Vulnerabilities
 
 If you discover a security vulnerability in this project, please email **cassianomeloprofissional@gmail.com** instead of using the issue tracker.

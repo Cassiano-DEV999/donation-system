@@ -1,5 +1,7 @@
 # 📖 Code of Conduct
 
+🌎 Languages: [English](CODE_OF_CONDUCT.md) | [Português (Brasil)](CODE_OF_CONDUCT.pt-BR.md)
+
 ## Our Pledge
 
 We are committed to providing a welcoming and inspiring community for all. We pledge that everyone participating in our community will experience an environment free of harassment based on age, body size, disability, ethnicity, gender identity and expression, level of experience, nationality, personal appearance, race, religion, sexual identity and orientation, or socioeconomic status.

@@ -1,5 +1,7 @@
 # 🤝 Contributing Guidelines
 
+🌎 Languages: [English](CONTRIBUTING.md) | [Português (Brasil)](CONTRIBUTING.pt-BR.md)
+
 Thank you for your interest in contributing to the Donation System! We welcome contributions from everyone.
 
 ## How to Contribute

@@ -1,6 +1,6 @@
 # 🎁 Donation Management System
 
-🌎 Languages: [English](README.md) | [Português (Brasil)](README.pt-BR.md)
+🌎 Languages: [English](README.en-US.md) | [Português (Brasil)](README.pt-BR.md)
 
 Complete system for NGOs to manage donations, control inventory, track batches, and generate barcode labels. Built to make daily operations simpler, faster, and fully traceable.
 

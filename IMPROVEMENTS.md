@@ -1,5 +1,7 @@
 # 🚀 Backend Improvements for Open Source
 
+🌎 Languages: [English](IMPROVEMENTS.md) | [Português (Brasil)](IMPROVEMENTS.pt-BR.md)
+
 ## Summary of Production-Ready Enhancements
 
 Your backend is now production-ready for an open-source project! Here's what was improved:
